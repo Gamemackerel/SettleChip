@@ -4,14 +4,14 @@
  */
 
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useColorScheme } from './useColorScheme';
 
 export function useThemeColor(
-  props: { light?: string; dark?: string; border?: string },
+  props: { light?: string; dark?: string },
   colorName: keyof typeof Colors.light & keyof typeof Colors.dark
 ) {
   const theme = useColorScheme() ?? 'light';
-  const colorFromProps = props[theme] || props.border;
+  const colorFromProps = props[theme];
 
   if (colorFromProps) {
     return colorFromProps;

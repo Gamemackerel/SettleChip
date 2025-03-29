@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
   TextInput,
-  Button,
   View,
   Platform,
   TouchableOpacity,
@@ -17,6 +16,7 @@ import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { ThemedButton } from '@/components/ThemedButton';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -312,17 +312,17 @@ export default function SetupGameScreen() {
       Alert.alert('Not Enough Players', 'Please add at least 2 players to start a game.');
       return;
     }
-    
+
     // Validate that buy-in amount is greater than 0
     const buyInValue = parseInt(buyInAmount, 10);
     if (buyInValue <= 0) {
       Alert.alert('Invalid Buy-In', 'Please set a buy-in amount greater than 0.');
       return;
     }
-    
+
     // Initialize the game with players and buy-in amount
     startGame(players, buyInValue);
-    
+
     // Navigate to the Game screen
     router.push('/game');
   };
@@ -385,9 +385,12 @@ export default function SetupGameScreen() {
             ))}
           </View>
 
-          <Button
+          <ThemedButton
             title="Start Game"
             onPress={handleStartGame}
+            icon={<Ionicons name="play" size={24} color="#FFFFFF" />}
+            style={styles.startGameButton}
+            type="primary"
           />
         </ScrollView>
       </ThemedView>
@@ -582,5 +585,9 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
     fontSize: 14,
     includeFontPadding: false,
+  },
+  startGameButton: {
+    marginTop: 20,
+    marginBottom: 30,
   },
 });

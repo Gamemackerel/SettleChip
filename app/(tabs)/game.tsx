@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-  Alert
+  Alert,
+  Text
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +15,7 @@ import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { ThemedButton } from '@/components/ThemedButton';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -73,11 +75,12 @@ const PlayerActionModal = ({
   onAddFunds: (amount: number) => void;
   onCashOut: () => void;
 }) => {
+  const colorScheme = useColorScheme() ?? 'light';
+  const borderColor = useThemeColor({}, 'icon');
+  const buttonPrimaryColor = useThemeColor({}, 'buttonPrimary');
   const [amount, setAmount] = useState('');
   const [showAddFundsInput, setShowAddFundsInput] = useState(false);
-  const colorScheme = useColorScheme() ?? 'light';
   const modalBackground = colorScheme === 'dark' ? '#222' : '#fff';
-  const borderColor = useThemeColor({}, 'icon');
   
   const handleAddFunds = () => {
     const numAmount = parseInt(amount, 10);
@@ -128,40 +131,22 @@ const PlayerActionModal = ({
           <View style={styles.modalBody}>
             {!showAddFundsInput ? (
               <>
-                <TouchableOpacity 
-                  style={[styles.actionButton, { borderColor }]}
+                <ThemedButton
+                  title="Add Funds"
                   onPress={() => setShowAddFundsInput(true)}
-                >
-                  <Ionicons 
-                    name="add-circle-outline" 
-                    size={24} 
-                    color={Colors[colorScheme].text} 
-                  />
-                  <ThemedText style={styles.actionButtonText}>Add Funds</ThemedText>
-                </TouchableOpacity>
+                  icon={<Ionicons name="add-circle-outline" size={24} color="#FFFFFF" />}
+                  style={styles.actionButtonSpacing}
+                  type="primary"
+                />
                 
-                <TouchableOpacity 
-                  style={[
-                    styles.actionButton, 
-                    styles.disabledButton,
-                    { borderColor }
-                  ]}
+                <ThemedButton
+                  title="Cash Out (Coming Soon)"
+                  type="secondary"
                   disabled={true}
-                >
-                  <Ionicons 
-                    name="cash-outline" 
-                    size={24} 
-                    color={Colors[colorScheme].tabIconDefault} 
-                  />
-                  <ThemedText 
-                    style={[
-                      styles.actionButtonText,
-                      { color: Colors[colorScheme].tabIconDefault }
-                    ]}
-                  >
-                    Cash Out (Coming Soon)
-                  </ThemedText>
-                </TouchableOpacity>
+                  onPress={() => {}}
+                  icon={<Ionicons name="cash-outline" size={24} color="#FFFFFF" />}
+                  style={styles.actionButtonSpacing}
+                />
               </>
             ) : (
               <View style={styles.addFundsContainer}>
@@ -184,24 +169,18 @@ const PlayerActionModal = ({
                   autoFocus={true}
                 />
                 <View style={styles.buttonRow}>
-                  <TouchableOpacity 
-                    style={[
-                      styles.cancelButton,
-                      { borderColor }
-                    ]}
+                  <ThemedButton
+                    title="Cancel"
+                    type="outline"
                     onPress={() => setShowAddFundsInput(false)}
-                  >
-                    <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[
-                      styles.addButton,
-                      { backgroundColor: Colors[colorScheme].tint }
-                    ]}
+                    style={{ flex: 1, marginRight: 10 }}
+                  />
+                  <ThemedButton
+                    title="Add"
                     onPress={handleAddFunds}
-                  >
-                    <ThemedText style={styles.addButtonText}>Add</ThemedText>
-                  </TouchableOpacity>
+                    style={{ flex: 1 }}
+                    type="accent"
+                  />
                 </View>
               </View>
             )}
@@ -396,20 +375,8 @@ const styles = StyleSheet.create({
   modalBody: {
     alignItems: 'stretch',
   },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    borderRadius: 10,
-    borderWidth: 1,
+  actionButtonSpacing: {
     marginBottom: 15,
-  },
-  disabledButton: {
-    opacity: 0.5,
-  },
-  actionButtonText: {
-    fontSize: 16,
-    marginLeft: 10,
   },
   addFundsContainer: {
     padding: 10,
@@ -437,26 +404,5 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  cancelButton: {
-    padding: 10,
-    borderRadius: 5,
-    borderWidth: 1,
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 10,
-  },
-  cancelButtonText: {
-    fontWeight: 'bold',
-  },
-  addButton: {
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    flex: 1,
-  },
-  addButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
   },
 });
