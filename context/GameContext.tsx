@@ -7,6 +7,7 @@ export type Player = {
   buyIn: number;
   finalAmount?: number;
   isComplete?: boolean;
+  hasError?: boolean;
 };
 
 // Define game state
@@ -14,6 +15,7 @@ type GameState = {
   players: Player[];
   buyInAmount: number;
   isGameFinished: boolean;
+  isTallyBalanced: boolean;
 };
 
 // Define context type
@@ -29,6 +31,9 @@ type GameContextType = {
   updatePlayerFinalAmount: (id: string, amount: number) => void;
   areAllPlayersComplete: () => boolean;
   getPlayerProfit: (player: Player) => number;
+  getTotalBuyIn: () => number;
+  getTotalCashOut: () => number;
+  validateTallyBalance: () => boolean;
 };
 
 // Create context
@@ -40,6 +45,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     players: [],
     buyInAmount: 20,
     isGameFinished: false,
+    isTallyBalanced: true,
   });
 
   const setPlayers = (players: Player[]) => {
@@ -91,6 +97,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       players,
       buyInAmount,
       isGameFinished: false,
+      isTallyBalanced: true,
     });
   };
 
@@ -102,24 +109,77 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ...player,
         isComplete: false,
         finalAmount: undefined,
+        hasError: false,
       })),
     }));
   };
 
-  const updatePlayerFinalAmount = (id: string, amount: number) => {
+  const getTotalBuyIn = () => {
+    return gameState.players.reduce((total, player) => total + player.buyIn, 0);
+  };
+
+  const getTotalCashOut = () => {
+    return gameState.players.reduce((total, player) => {
+      return total + (player.finalAmount || 0);
+    }, 0);
+  };
+
+  const validateTallyBalance = () => {
+    const totalBuyIn = getTotalBuyIn();
+    const totalCashOut = getTotalCashOut();
+    const isBalanced = Math.abs(totalBuyIn - totalCashOut) < 0.01; // Allow for tiny floating point differences
+    
     setGameState(prev => ({
       ...prev,
-      players: prev.players.map(player =>
-        player.id === id
-          ? { ...player, finalAmount: amount, isComplete: true }
-          : player
-      ),
+      isTallyBalanced: isBalanced,
+      players: prev.players.map(player => ({
+        ...player,
+        hasError: player.isComplete ? !isBalanced : false,
+      })),
     }));
+    
+    return isBalanced;
+  };
+
+  const updatePlayerFinalAmount = (id: string, amount: number) => {
+    setGameState(prev => {
+      const updatedPlayers = prev.players.map(player =>
+        player.id === id
+          ? { ...player, finalAmount: amount, isComplete: true, hasError: false }
+          : player
+      );
+      
+      const updatedState = {
+        ...prev,
+        players: updatedPlayers,
+      };
+      
+      // Check if all players have completed their tally
+      const allComplete = updatedPlayers.every(player => player.isComplete);
+      
+      if (allComplete) {
+        const totalBuyIn = updatedPlayers.reduce((total, p) => total + p.buyIn, 0);
+        const totalCashOut = updatedPlayers.reduce((total, p) => total + (p.finalAmount || 0), 0);
+        const isBalanced = Math.abs(totalBuyIn - totalCashOut) < 0.01;
+        
+        return {
+          ...updatedState,
+          isTallyBalanced: isBalanced,
+          players: updatedPlayers.map(p => ({
+            ...p,
+            hasError: !isBalanced,
+          })),
+        };
+      }
+      
+      return updatedState;
+    });
   };
 
   const areAllPlayersComplete = () => {
     return gameState.players.length > 0 &&
-           gameState.players.every(player => player.isComplete);
+           gameState.players.every(player => player.isComplete) &&
+           gameState.isTallyBalanced;
   };
 
   const getPlayerProfit = (player: Player) => {
@@ -141,6 +201,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         updatePlayerFinalAmount,
         areAllPlayersComplete,
         getPlayerProfit,
+        getTotalBuyIn,
+        getTotalCashOut,
+        validateTallyBalance,
       }}
     >
       {children}

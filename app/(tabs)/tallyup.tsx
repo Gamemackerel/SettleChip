@@ -37,9 +37,17 @@ const PlayerTallyCard = ({
   const textColor = useThemeColor({}, 'text');
   const positiveColor = '#4CAF50'; // green for profit
   const negativeColor = '#F44336'; // red for loss
+  const warningColor = '#FF9800'; // orange for warning
   
   const profit = player.finalAmount !== undefined ? player.finalAmount - player.buyIn : 0;
   const profitColor = profit >= 0 ? positiveColor : negativeColor;
+  
+  // Determine border color based on completion and error state
+  const getBorderColor = () => {
+    if (!player.isComplete) return borderColor;
+    if (player.hasError) return warningColor;
+    return positiveColor;
+  };
   
   return (
     <TouchableOpacity 
@@ -47,7 +55,7 @@ const PlayerTallyCard = ({
         styles.playerCard, 
         { 
           backgroundColor: cardBackground,
-          borderColor: player.isComplete ? positiveColor : borderColor,
+          borderColor: getBorderColor(),
           borderWidth: player.isComplete ? 2 : 1,
         }
       ]}
@@ -85,11 +93,19 @@ const PlayerTallyCard = ({
       
       <View style={styles.playerCardActions}>
         {player.isComplete ? (
-          <Ionicons 
-            name="checkmark-circle" 
-            size={24} 
-            color={positiveColor} 
-          />
+          player.hasError ? (
+            <Ionicons 
+              name="warning" 
+              size={24} 
+              color={warningColor} 
+            />
+          ) : (
+            <Ionicons 
+              name="checkmark-circle" 
+              size={24} 
+              color={positiveColor} 
+            />
+          )
         ) : (
           <Ionicons 
             name="chevron-forward" 
@@ -292,7 +308,14 @@ const ChipTallyModal = ({
 };
 
 export default function TallyUpScreen() {
-  const { gameState, updatePlayerFinalAmount, areAllPlayersComplete, getPlayerProfit } = useGameContext();
+  const { 
+    gameState, 
+    updatePlayerFinalAmount, 
+    areAllPlayersComplete, 
+    getPlayerProfit,
+    getTotalBuyIn,
+    getTotalCashOut
+  } = useGameContext();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   
@@ -310,6 +333,11 @@ export default function TallyUpScreen() {
   const handleSettleUp = () => {
     router.navigate("/(tabs)/settle");
   };
+
+  const totalBuyIn = getTotalBuyIn();
+  const totalCashOut = getTotalCashOut();
+  const isBalanced = Math.abs(totalBuyIn - totalCashOut) < 0.01;
+  const allPlayersHaveEntered = gameState.players.length > 0 && gameState.players.every(player => player.isComplete);
   
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -324,6 +352,15 @@ export default function TallyUpScreen() {
           <ThemedText type="title" style={styles.title}>Tally Up Results</ThemedText>
           <View style={styles.placeholder} />
         </View>
+        
+        {allPlayersHaveEntered && !isBalanced && (
+          <View style={styles.errorBanner}>
+            <Ionicons name="warning" size={20} color="#FFFFFF" />
+            <ThemedText style={styles.errorText}>
+              Total buy-in (${totalBuyIn}) doesn't match total cash-out (${totalCashOut})
+            </ThemedText>
+          </View>
+        )}
         
         <ScrollView 
           style={styles.scrollView}
@@ -570,5 +607,19 @@ const styles = StyleSheet.create({
   bottomButtonContainer: {
     marginTop: 10,
     marginBottom: 10,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF9800',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 15,
+  },
+  errorText: {
+    color: '#FFFFFF',
+    marginLeft: 10,
+    flex: 1,
+    fontSize: 14,
   },
 });
