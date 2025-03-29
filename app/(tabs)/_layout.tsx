@@ -29,7 +29,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Setup',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
@@ -38,6 +38,20 @@ export default function TabLayout() {
         options={{
           title: 'Game',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="gamecontroller.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="tallyup"
+        options={{
+          title: 'Tally Up',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.clipboard.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settle"
+        options={{
+          title: 'Settle Up',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="dollarsign.circle.fill" color={color} />,
         }}
       />
       <Tabs.Screen

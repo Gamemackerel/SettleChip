@@ -5,12 +5,15 @@ export type Player = {
   id: string;
   name: string;
   buyIn: number;
+  finalAmount?: number;
+  isComplete?: boolean;
 };
 
 // Define game state
 type GameState = {
   players: Player[];
   buyInAmount: number;
+  isGameFinished: boolean;
 };
 
 // Define context type
@@ -22,6 +25,10 @@ type GameContextType = {
   addFunds: (id: string, amount: number) => void;
   setBuyInAmount: (amount: number) => void;
   startGame: (playerNames: string[], buyInAmount: number) => void;
+  finishGame: () => void;
+  updatePlayerFinalAmount: (id: string, amount: number) => void;
+  areAllPlayersComplete: () => boolean;
+  getPlayerProfit: (player: Player) => number;
 };
 
 // Create context
@@ -32,6 +39,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, setGameState] = useState<GameState>({
     players: [],
     buyInAmount: 20,
+    isGameFinished: false,
   });
 
   const setPlayers = (players: Player[]) => {
@@ -82,7 +90,41 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setGameState({
       players,
       buyInAmount,
+      isGameFinished: false,
     });
+  };
+
+  const finishGame = () => {
+    setGameState(prev => ({
+      ...prev,
+      isGameFinished: true,
+      players: prev.players.map(player => ({
+        ...player,
+        isComplete: false,
+        finalAmount: undefined,
+      })),
+    }));
+  };
+
+  const updatePlayerFinalAmount = (id: string, amount: number) => {
+    setGameState(prev => ({
+      ...prev,
+      players: prev.players.map(player =>
+        player.id === id
+          ? { ...player, finalAmount: amount, isComplete: true }
+          : player
+      ),
+    }));
+  };
+
+  const areAllPlayersComplete = () => {
+    return gameState.players.length > 0 &&
+           gameState.players.every(player => player.isComplete);
+  };
+
+  const getPlayerProfit = (player: Player) => {
+    if (player.finalAmount === undefined) return 0;
+    return player.finalAmount - player.buyIn;
   };
 
   return (
@@ -95,6 +137,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         addFunds,
         setBuyInAmount,
         startGame,
+        finishGame,
+        updatePlayerFinalAmount,
+        areAllPlayersComplete,
+        getPlayerProfit,
       }}
     >
       {children}

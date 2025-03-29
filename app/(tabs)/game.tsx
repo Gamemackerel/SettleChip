@@ -192,7 +192,7 @@ const PlayerActionModal = ({
 };
 
 export default function GameScreen() {
-  const { gameState, addFunds } = useGameContext();
+  const { gameState, addFunds, finishGame } = useGameContext();
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; buyIn: number } | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   
@@ -210,6 +210,15 @@ export default function GameScreen() {
   const handleCashOut = () => {
     // To be implemented
     Alert.alert('Coming Soon', 'Cash out functionality will be available soon');
+  };
+
+  const handleFinishGame = () => {
+    if (gameState.players.length === 0) {
+      Alert.alert('No Players', 'You need to add players before finishing a game');
+      return;
+    }
+    finishGame();
+    router.navigate("/(tabs)/tallyup");
   };
   
   // Display initial buy-in amount at the top
@@ -259,6 +268,15 @@ export default function GameScreen() {
             ))
           )}
         </ScrollView>
+        
+        <View style={styles.bottomButtonContainer}>
+          <ThemedButton
+            title="Finish Game"
+            onPress={handleFinishGame}
+            type="accent"
+            icon={<Ionicons name="checkmark-circle-outline" size={24} color="#FFFFFF" />}
+          />
+        </View>
         
         <PlayerActionModal
           visible={modalVisible}
@@ -404,5 +422,9 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  bottomButtonContainer: {
+    marginTop: 10,
+    marginBottom: 10,
   },
 });
