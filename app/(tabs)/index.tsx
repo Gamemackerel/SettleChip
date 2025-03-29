@@ -8,16 +8,19 @@ import {
   TouchableOpacity,
   Keyboard,
   ScrollView,
-  Text
+  Text,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useGameContext } from '@/context/GameContext';
 
 // Define chip types with their colors and values
 type ChipType = {
@@ -198,6 +201,7 @@ export default function SetupGameScreen() {
   const [buyInAmount, setBuyInAmount] = useState('20');
   const [chips, setChips] = useState<ChipType[]>(defaultChips);
   const colorScheme = useColorScheme() ?? 'light';
+  const { startGame } = useGameContext();
 
   const handleChipQuantityChange = (id: string, quantity: number) => {
     setChips(chips.map(chip =>
@@ -301,6 +305,28 @@ export default function SetupGameScreen() {
 
   const displayBuyInAmount = formatCurrency(buyInAmount);
 
+  // Handle starting the game
+  const handleStartGame = () => {
+    // Validate that we have at least 2 players
+    if (players.length < 2) {
+      Alert.alert('Not Enough Players', 'Please add at least 2 players to start a game.');
+      return;
+    }
+    
+    // Validate that buy-in amount is greater than 0
+    const buyInValue = parseInt(buyInAmount, 10);
+    if (buyInValue <= 0) {
+      Alert.alert('Invalid Buy-In', 'Please set a buy-in amount greater than 0.');
+      return;
+    }
+    
+    // Initialize the game with players and buy-in amount
+    startGame(players, buyInValue);
+    
+    // Navigate to the Game screen
+    router.push('/game');
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.outerContainer}>
@@ -361,7 +387,7 @@ export default function SetupGameScreen() {
 
           <Button
             title="Start Game"
-            // onPress={handleStartGame}
+            onPress={handleStartGame}
           />
         </ScrollView>
       </ThemedView>
