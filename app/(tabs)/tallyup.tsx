@@ -24,11 +24,11 @@ import { useGameContext } from '@/context/GameContext';
 import { Player } from '@/context/GameContext';
 
 // Player tally card component with progress indicator
-const PlayerTallyCard = ({ 
-  player, 
-  onPress 
-}: { 
-  player: Player; 
+const PlayerTallyCard = ({
+  player,
+  onPress
+}: {
+  player: Player;
   onPress: () => void;
 }) => {
   const colorScheme = useColorScheme() ?? 'light';
@@ -38,22 +38,22 @@ const PlayerTallyCard = ({
   const positiveColor = '#4CAF50'; // green for profit
   const negativeColor = '#F44336'; // red for loss
   const warningColor = '#FF9800'; // orange for warning
-  
+
   const profit = player.finalAmount !== undefined ? player.finalAmount - player.buyIn : 0;
   const profitColor = profit >= 0 ? positiveColor : negativeColor;
-  
+
   // Determine border color based on completion and error state
   const getBorderColor = () => {
     if (!player.isComplete) return borderColor;
     if (player.hasError) return warningColor;
     return positiveColor;
   };
-  
+
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[
-        styles.playerCard, 
-        { 
+        styles.playerCard,
+        {
           backgroundColor: cardBackground,
           borderColor: getBorderColor(),
           borderWidth: player.isComplete ? 2 : 1,
@@ -63,19 +63,19 @@ const PlayerTallyCard = ({
     >
       <View style={styles.playerCardContent}>
         <ThemedText style={styles.playerName}>{player.name}</ThemedText>
-        
+
         {player.isComplete ? (
           <View style={styles.playerStatRow}>
             <View style={styles.statItem}>
               <ThemedText style={styles.statLabel}>Buy-in</ThemedText>
               <ThemedText style={styles.statValue}>${player.buyIn.toLocaleString()}</ThemedText>
             </View>
-            
+
             <View style={styles.statItem}>
               <ThemedText style={styles.statLabel}>Cash-out</ThemedText>
               <ThemedText style={styles.statValue}>${player.finalAmount?.toLocaleString() || '0'}</ThemedText>
             </View>
-            
+
             <View style={styles.statItem}>
               <ThemedText style={styles.statLabel}>Profit</ThemedText>
               <ThemedText style={[styles.statValue, { color: profitColor }]}>
@@ -90,27 +90,27 @@ const PlayerTallyCard = ({
           </View>
         )}
       </View>
-      
+
       <View style={styles.playerCardActions}>
         {player.isComplete ? (
           player.hasError ? (
-            <Ionicons 
-              name="warning" 
-              size={24} 
-              color={warningColor} 
+            <Ionicons
+              name="warning"
+              size={24}
+              color={warningColor}
             />
           ) : (
-            <Ionicons 
-              name="checkmark-circle" 
-              size={24} 
-              color={positiveColor} 
+            <Ionicons
+              name="checkmark-circle"
+              size={24}
+              color={positiveColor}
             />
           )
         ) : (
-          <Ionicons 
-            name="chevron-forward" 
-            size={24} 
-            color={Colors[colorScheme].text} 
+          <Ionicons
+            name="chevron-forward"
+            size={24}
+            color={Colors[colorScheme].text}
           />
         )}
       </View>
@@ -134,7 +134,7 @@ const ChipTallyModal = ({
   const borderColor = useThemeColor({}, 'icon');
   const buttonPrimaryColor = useThemeColor({}, 'buttonPrimary');
   const modalBackground = colorScheme === 'dark' ? '#222' : '#fff';
-  
+
   const [directAmount, setDirectAmount] = useState('');
   const [useChipCounting, setUseChipCounting] = useState(false);
   const [chipCounts, setChipCounts] = useState<{ color: string; value: number; count: number }[]>([
@@ -144,18 +144,47 @@ const ChipTallyModal = ({
     { color: 'green', value: 25, count: 0 },
     { color: 'black', value: 100, count: 0 },
   ]);
-  
+
+  // Reset form when player changes or modal becomes visible
+  React.useEffect(() => {
+    if (visible && player) {
+      // If player already has a final amount, pre-populate the form
+      if (player.finalAmount !== undefined) {
+        setDirectAmount(player.finalAmount.toString());
+        // Reset chip counts but keep useChipCounting as is
+        setChipCounts([
+          { color: 'white', value: 1, count: 0 },
+          { color: 'red', value: 5, count: 0 },
+          { color: 'blue', value: 10, count: 0 },
+          { color: 'green', value: 25, count: 0 },
+          { color: 'black', value: 100, count: 0 },
+        ]);
+      } else {
+        // New player with no final amount yet
+        setDirectAmount('');
+        setUseChipCounting(false);
+        setChipCounts([
+          { color: 'white', value: 1, count: 0 },
+          { color: 'red', value: 5, count: 0 },
+          { color: 'blue', value: 10, count: 0 },
+          { color: 'green', value: 25, count: 0 },
+          { color: 'black', value: 100, count: 0 },
+        ]);
+      }
+    }
+  }, [visible, player?.id]); // Only run when visibility changes or player changes
+
   const calculateTotalFromChips = () => {
     return chipCounts.reduce((total, chip) => total + (chip.value * chip.count), 0);
   };
-  
+
   const handleChangeChipCount = (index: number, count: string) => {
     const newCount = parseInt(count) || 0;
     const newChipCounts = [...chipCounts];
     newChipCounts[index] = { ...newChipCounts[index], count: newCount };
     setChipCounts(newChipCounts);
   };
-  
+
   const handleSaveTally = () => {
     if (useChipCounting) {
       const totalAmount = calculateTotalFromChips();
@@ -174,12 +203,12 @@ const ChipTallyModal = ({
     }
     onClose();
   };
-  
+
   const renderChipCountingForm = () => {
     return (
       <View style={styles.chipCountingForm}>
         <ThemedText style={styles.chipCountingTitle}>Count Chips</ThemedText>
-        
+
         {chipCounts.map((chip, index) => (
           <View key={chip.color} style={styles.chipCountRow}>
             <View style={[styles.chipIcon, { backgroundColor: chip.color }]} />
@@ -187,7 +216,7 @@ const ChipTallyModal = ({
             <TextInput
               style={[
                 styles.chipCountInput,
-                { 
+                {
                   color: Colors[colorScheme].text,
                   borderColor,
                   backgroundColor: colorScheme === 'dark' ? '#333' : '#f5f5f5'
@@ -204,7 +233,7 @@ const ChipTallyModal = ({
             </ThemedText>
           </View>
         ))}
-        
+
         <View style={styles.totalRow}>
           <ThemedText style={styles.totalLabel}>Total:</ThemedText>
           <ThemedText style={styles.totalAmount}>
@@ -214,7 +243,7 @@ const ChipTallyModal = ({
       </View>
     );
   };
-  
+
   const renderDirectAmountForm = () => {
     return (
       <View style={styles.directAmountForm}>
@@ -222,7 +251,7 @@ const ChipTallyModal = ({
         <TextInput
           style={[
             styles.directAmountInput,
-            { 
+            {
               color: Colors[colorScheme].text,
               borderColor,
               backgroundColor: colorScheme === 'dark' ? '#333' : '#f5f5f5'
@@ -233,15 +262,15 @@ const ChipTallyModal = ({
           keyboardType="numeric"
           placeholder="Enter amount"
           placeholderTextColor={Colors[colorScheme].tabIconDefault}
-          autoFocus={!useChipCounting}
+          autoFocus
         />
       </View>
     );
   };
-  
+
   // Render empty modal if player is null, but don't return early
   const playerName = player ? player.name : '';
-  
+
   return (
     <Modal
       visible={visible}
@@ -251,8 +280,8 @@ const ChipTallyModal = ({
     >
       <View style={styles.modalOverlay}>
         <View style={[
-          styles.modalContent, 
-          { 
+          styles.modalContent,
+          {
             backgroundColor: modalBackground,
             borderColor
           }
@@ -260,14 +289,14 @@ const ChipTallyModal = ({
           <View style={styles.modalHeader}>
             <ThemedText style={styles.modalTitle}>{playerName}'s Final Tally</ThemedText>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons 
-                name="close" 
-                size={24} 
-                color={Colors[colorScheme].text} 
+              <Ionicons
+                name="close"
+                size={24}
+                color={Colors[colorScheme].text}
               />
             </TouchableOpacity>
           </View>
-          
+
           {player && (
             <>
               <View style={styles.inputMethodToggle}>
@@ -280,11 +309,11 @@ const ChipTallyModal = ({
                 />
                 <ThemedText style={styles.toggleLabel}>Count chips</ThemedText>
               </View>
-              
+
               <ScrollView style={styles.modalBody}>
                 {useChipCounting ? renderChipCountingForm() : renderDirectAmountForm()}
               </ScrollView>
-              
+
               <View style={styles.buttonRow}>
                 <ThemedButton
                   title="Cancel"
@@ -308,28 +337,28 @@ const ChipTallyModal = ({
 };
 
 export default function TallyUpScreen() {
-  const { 
-    gameState, 
-    updatePlayerFinalAmount, 
-    areAllPlayersComplete, 
+  const {
+    gameState,
+    updatePlayerFinalAmount,
+    areAllPlayersComplete,
     getPlayerProfit,
     getTotalBuyIn,
     getTotalCashOut
   } = useGameContext();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   const handlePlayerPress = (player: Player) => {
     setSelectedPlayer(player);
     setModalVisible(true);
   };
-  
+
   const handleSaveTally = (amount: number, method: 'direct' | 'chips') => {
     if (selectedPlayer) {
       updatePlayerFinalAmount(selectedPlayer.id, amount);
     }
   };
-  
+
   const handleSettleUp = () => {
     router.navigate("/(tabs)/settle");
   };
@@ -338,12 +367,12 @@ export default function TallyUpScreen() {
   const totalCashOut = getTotalCashOut();
   const isBalanced = Math.abs(totalBuyIn - totalCashOut) < 0.01;
   const allPlayersHaveEntered = gameState.players.length > 0 && gameState.players.every(player => player.isComplete);
-  
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.navigate("/(tabs)/game")}
           >
@@ -352,7 +381,7 @@ export default function TallyUpScreen() {
           <ThemedText type="title" style={styles.title}>Tally Up Results</ThemedText>
           <View style={styles.placeholder} />
         </View>
-        
+
         {allPlayersHaveEntered && !isBalanced && (
           <View style={styles.errorBanner}>
             <Ionicons name="warning" size={20} color="#FFFFFF" />
@@ -361,8 +390,8 @@ export default function TallyUpScreen() {
             </ThemedText>
           </View>
         )}
-        
-        <ScrollView 
+
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
         >
@@ -372,15 +401,15 @@ export default function TallyUpScreen() {
             </ThemedText>
           ) : (
             gameState.players.map(player => (
-              <PlayerTallyCard 
-                key={player.id} 
-                player={player} 
+              <PlayerTallyCard
+                key={player.id}
+                player={player}
                 onPress={() => handlePlayerPress(player)}
               />
             ))
           )}
         </ScrollView>
-        
+
         <View style={styles.bottomButtonContainer}>
           <ThemedButton
             title="Settle Up"
@@ -390,7 +419,7 @@ export default function TallyUpScreen() {
             disabled={!areAllPlayersComplete()}
           />
         </View>
-        
+
         <ChipTallyModal
           visible={modalVisible}
           player={selectedPlayer}
