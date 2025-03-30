@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -135,7 +135,7 @@ const ChipTallyModal = ({
   const buttonPrimaryColor = useThemeColor({}, 'buttonPrimary');
   const modalBackground = colorScheme === 'dark' ? '#222' : '#fff';
 
-  const [directAmount, setDirectAmount] = useState('');
+  const [directAmount, setDirectAmount] = useState(0);
   const [useChipCounting, setUseChipCounting] = useState(false);
   const [chipCounts, setChipCounts] = useState<{ color: string; value: number; count: number }[]>([
     { color: 'white', value: 1, count: 0 },
@@ -145,13 +145,12 @@ const ChipTallyModal = ({
     { color: 'black', value: 100, count: 0 },
   ]);
 
-  // Reset form when player changes or modal becomes visible
-  React.useEffect(() => {
+  const inputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
     if (visible && player) {
-      // If player already has a final amount, pre-populate the form
       if (player.finalAmount !== undefined) {
-        setDirectAmount(player.finalAmount.toString());
-        // Reset chip counts but keep useChipCounting as is
+        setDirectAmount(player.finalAmount);
         setChipCounts([
           { color: 'white', value: 1, count: 0 },
           { color: 'red', value: 5, count: 0 },
@@ -160,8 +159,7 @@ const ChipTallyModal = ({
           { color: 'black', value: 100, count: 0 },
         ]);
       } else {
-        // New player with no final amount yet
-        setDirectAmount('');
+        setDirectAmount(0);
         setUseChipCounting(false);
         setChipCounts([
           { color: 'white', value: 1, count: 0 },
@@ -172,7 +170,25 @@ const ChipTallyModal = ({
         ]);
       }
     }
-  }, [visible, player?.id]); // Only run when visibility changes or player changes
+  }, [visible, player?.id]);
+
+  useEffect(() => {
+    if (visible && !useChipCounting && inputRef.current) {
+      const timer = setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [visible, useChipCounting]);
+
+  const handleTextChange = (text: string) => {
+    const amount = parseInt(text) || 0;
+    if (amount >= 0) {
+      setDirectAmount(amount);
+    }
+  };
 
   const calculateTotalFromChips = () => {
     return chipCounts.reduce((total, chip) => total + (chip.value * chip.count), 0);
@@ -188,18 +204,13 @@ const ChipTallyModal = ({
   const handleSaveTally = () => {
     if (useChipCounting) {
       const totalAmount = calculateTotalFromChips();
-      if (totalAmount <= 0) {
-        Alert.alert('Invalid Amount', 'Please enter at least one chip');
-        return;
-      }
       onSaveTally(totalAmount, 'chips');
     } else {
-      const numAmount = parseInt(directAmount, 10);
-      if (isNaN(numAmount) || numAmount < 0) {
+      if (directAmount < 0) {
         Alert.alert('Invalid Amount', 'Please enter a valid amount');
         return;
       }
-      onSaveTally(numAmount, 'direct');
+      onSaveTally(directAmount, 'direct');
     }
     onClose();
   };
@@ -249,6 +260,7 @@ const ChipTallyModal = ({
       <View style={styles.directAmountForm}>
         <ThemedText style={styles.directAmountTitle}>Enter Final Amount</ThemedText>
         <TextInput
+          ref={inputRef}
           style={[
             styles.directAmountInput,
             {
@@ -257,18 +269,19 @@ const ChipTallyModal = ({
               backgroundColor: colorScheme === 'dark' ? '#333' : '#f5f5f5'
             }
           ]}
-          value={directAmount}
-          onChangeText={setDirectAmount}
+          value={directAmount.toString()}
+          onChangeText={handleTextChange}
           keyboardType="numeric"
           placeholder="Enter amount"
           placeholderTextColor={Colors[colorScheme].tabIconDefault}
-          autoFocus
+          autoFocus={false}
+          clearButtonMode="while-editing"
+          selectTextOnFocus={true}
         />
       </View>
     );
   };
 
-  // Render empty modal if player is null, but don't return early
   const playerName = player ? player.name : '';
 
   return (
