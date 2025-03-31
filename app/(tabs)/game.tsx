@@ -5,9 +5,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Modal,
-  TextInput,
+  Text,
   Alert,
-  Text
+  FlatList
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,28 +16,29 @@ import { router } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedButton } from '@/components/ThemedButton';
+import { MoneyInput } from '@/components/MoneyInput';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useGameContext } from '@/context/GameContext';
 
 // Player card component
-const PlayerCard = ({ 
-  player, 
-  onPress 
-}: { 
-  player: { id: string; name: string; buyIn: number }; 
+const PlayerCard = ({
+  player,
+  onPress
+}: {
+  player: { id: string; name: string; buyIn: number };
   onPress: () => void;
 }) => {
   const colorScheme = useColorScheme() ?? 'light';
   const cardBackground = colorScheme === 'dark' ? '#333' : '#f5f5f5';
   const borderColor = useThemeColor({}, 'icon');
-  
+
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[
-        styles.playerCard, 
-        { 
+        styles.playerCard,
+        {
           backgroundColor: cardBackground,
           borderColor
         }
@@ -51,10 +52,10 @@ const PlayerCard = ({
         </ThemedText>
       </View>
       <View style={styles.playerCardActions}>
-        <Ionicons 
-          name="ellipsis-vertical" 
-          size={24} 
-          color={Colors[colorScheme].text} 
+        <Ionicons
+          name="ellipsis-vertical"
+          size={24}
+          color={Colors[colorScheme].text}
         />
       </View>
     </TouchableOpacity>
@@ -81,27 +82,26 @@ const PlayerActionModal = ({
   const [amount, setAmount] = useState('');
   const [showAddFundsInput, setShowAddFundsInput] = useState(false);
   const modalBackground = colorScheme === 'dark' ? '#222' : '#fff';
-  
+
   const handleAddFunds = () => {
     const numAmount = parseInt(amount, 10);
     if (isNaN(numAmount) || numAmount <= 0) {
       Alert.alert('Invalid Amount', 'Please enter a valid amount');
       return;
     }
-    
+
     onAddFunds(numAmount);
     setAmount('');
     setShowAddFundsInput(false);
-    onClose();
   };
-  
+
   const handleClose = () => {
     setShowAddFundsInput(false);
     onClose();
   };
-  
+
   if (!player) return null;
-  
+
   return (
     <Modal
       visible={visible}
@@ -111,8 +111,8 @@ const PlayerActionModal = ({
     >
       <View style={styles.modalOverlay}>
         <View style={[
-          styles.modalContent, 
-          { 
+          styles.modalContent,
+          {
             backgroundColor: modalBackground,
             borderColor
           }
@@ -120,14 +120,14 @@ const PlayerActionModal = ({
           <View style={styles.modalHeader}>
             <ThemedText style={styles.modalTitle}>{player.name}</ThemedText>
             <TouchableOpacity onPress={handleClose}>
-              <Ionicons 
-                name="close" 
-                size={24} 
-                color={Colors[colorScheme].text} 
+              <Ionicons
+                name="close"
+                size={24}
+                color={Colors[colorScheme].text}
               />
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.modalBody}>
             {!showAddFundsInput ? (
               <>
@@ -138,7 +138,7 @@ const PlayerActionModal = ({
                   style={styles.actionButtonSpacing}
                   type="primary"
                 />
-                
+
                 <ThemedButton
                   title="Cash Out (Coming Soon)"
                   type="secondary"
@@ -152,22 +152,13 @@ const PlayerActionModal = ({
               <View style={styles.addFundsContainer}>
                 <ThemedText style={styles.addFundsTitle}>Add Funds</ThemedText>
                 <ThemedText style={styles.amountInputLabel}>Amount:</ThemedText>
-                <TextInput
-                  style={[
-                    styles.amountInput,
-                    { 
-                      color: Colors[colorScheme].text,
-                      borderColor,
-                      backgroundColor: colorScheme === 'dark' ? '#333' : '#f5f5f5'
-                    }
-                  ]}
-                  value={amount}
-                  onChangeText={setAmount}
-                  placeholder="Enter amount"
-                  placeholderTextColor={Colors[colorScheme].tabIconDefault}
-                  keyboardType="numeric"
-                  autoFocus={true}
-                />
+                <View style={styles.moneyInputContainer}>
+                  <MoneyInput
+                    value={amount}
+                    onChangeText={setAmount}
+                    autoFocus={true}
+                  />
+                </View>
                 <View style={styles.buttonRow}>
                   <ThemedButton
                     title="Cancel"
@@ -195,18 +186,18 @@ export default function GameScreen() {
   const { gameState, addFunds, finishGame } = useGameContext();
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; buyIn: number } | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   const handlePlayerPress = (player: { id: string; name: string; buyIn: number }) => {
     setSelectedPlayer(player);
     setModalVisible(true);
   };
-  
+
   const handleAddFunds = (amount: number) => {
     if (selectedPlayer) {
       addFunds(selectedPlayer.id, amount);
     }
   };
-  
+
   const handleCashOut = () => {
     // To be implemented
     Alert.alert('Coming Soon', 'Cash out functionality will be available soon');
@@ -220,7 +211,7 @@ export default function GameScreen() {
     finishGame();
     router.navigate("/(tabs)/tallyup");
   };
-  
+
   // Display initial buy-in amount at the top
   const renderBuyInInfo = () => {
     if (gameState.buyInAmount > 0) {
@@ -233,12 +224,12 @@ export default function GameScreen() {
     }
     return null;
   };
-  
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
@@ -247,10 +238,10 @@ export default function GameScreen() {
           <ThemedText type="title" style={styles.title}>Game in Progress</ThemedText>
           <View style={styles.placeholder} />
         </View>
-        
+
         {renderBuyInInfo()}
-        
-        <ScrollView 
+
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
         >
@@ -260,15 +251,15 @@ export default function GameScreen() {
             </ThemedText>
           ) : (
             gameState.players.map(player => (
-              <PlayerCard 
-                key={player.id} 
-                player={player} 
+              <PlayerCard
+                key={player.id}
+                player={player}
                 onPress={() => handlePlayerPress(player)}
               />
             ))
           )}
         </ScrollView>
-        
+
         <View style={styles.bottomButtonContainer}>
           <ThemedButton
             title="Finish Game"
@@ -277,7 +268,7 @@ export default function GameScreen() {
             icon={<Ionicons name="checkmark-circle-outline" size={24} color="#FFFFFF" />}
           />
         </View>
-        
+
         <PlayerActionModal
           visible={modalVisible}
           player={selectedPlayer}
@@ -412,11 +403,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
   },
-  amountInput: {
-    height: 40,
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
+  moneyInputContainer: {
+    width: '100%',
+    alignItems: 'center',
     marginBottom: 15,
   },
   buttonRow: {

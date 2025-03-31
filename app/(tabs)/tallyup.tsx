@@ -8,7 +8,8 @@ import {
   TextInput,
   Alert,
   Switch,
-  FlatList
+  FlatList,
+  Text
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +18,7 @@ import { router } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedButton } from '@/components/ThemedButton';
+import { MoneyInput } from '@/components/MoneyInput';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -172,22 +174,9 @@ const ChipTallyModal = ({
     }
   }, [visible, player?.id]);
 
-  useEffect(() => {
-    if (visible && !useChipCounting && inputRef.current) {
-      const timer = setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [visible, useChipCounting]);
-
-  const handleTextChange = (text: string) => {
+  const handleDirectAmountChange = (text: string) => {
     const amount = parseInt(text) || 0;
-    if (amount >= 0) {
-      setDirectAmount(amount);
-    }
+    setDirectAmount(amount);
   };
 
   const calculateTotalFromChips = () => {
@@ -258,25 +247,13 @@ const ChipTallyModal = ({
   const renderDirectAmountForm = () => {
     return (
       <View style={styles.directAmountForm}>
-        <ThemedText style={styles.directAmountTitle}>Enter Final Amount</ThemedText>
-        <TextInput
-          ref={inputRef}
-          style={[
-            styles.directAmountInput,
-            {
-              color: Colors[colorScheme].text,
-              borderColor,
-              backgroundColor: colorScheme === 'dark' ? '#333' : '#f5f5f5'
-            }
-          ]}
+        <ThemedText style={styles.directAmountTitle}>
+          Enter Final Amount <Text style={{ fontSize: 24 }}>💰</Text>
+        </ThemedText>
+        <MoneyInput
           value={directAmount.toString()}
-          onChangeText={handleTextChange}
-          keyboardType="numeric"
-          placeholder="Enter amount"
-          placeholderTextColor={Colors[colorScheme].tabIconDefault}
-          autoFocus={false}
-          clearButtonMode="while-editing"
-          selectTextOnFocus={true}
+          onChangeText={handleDirectAmountChange}
+          autoFocus={true}
         />
       </View>
     );
@@ -573,14 +550,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
-    textAlign: 'center',
-  },
-  directAmountInput: {
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    fontSize: 18,
     textAlign: 'center',
   },
   chipCountingForm: {

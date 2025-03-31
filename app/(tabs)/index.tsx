@@ -17,6 +17,7 @@ import { router } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedButton } from '@/components/ThemedButton';
+import { MoneyInput } from '@/components/MoneyInput';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -87,7 +88,6 @@ function ChipConfigItem({
   onQuantityChange: (id: string, quantity: number) => void;
 }) {
   const colorScheme = useColorScheme() ?? 'light';
-  const textColor = useThemeColor({}, 'text');
   const borderColor = Colors[colorScheme].icon;
 
   return (
@@ -129,7 +129,6 @@ function PlayerTagInput({
   const colorScheme = useColorScheme() ?? 'light';
   const textColor = useThemeColor({}, 'text');
   const borderColor = Colors[colorScheme].icon;
-  const backgroundColor = useThemeColor({}, 'background');
   const chipBgColor = colorScheme === 'dark' ? '#333' : '#e0e0e0';
 
   // Determine text alignment based on whether players exist
@@ -221,89 +220,11 @@ export default function SetupGameScreen() {
     setPlayers(newPlayers);
   };
 
-  // Format currency with $ and commas
-  const formatCurrency = (value: string): string => {
-    // Remove any non-numeric characters
-    const numericValue = value.replace(/[^0-9]/g, '');
-
-    // Format with commas for thousands
-    let formattedValue = '';
-    if (numericValue) {
-      formattedValue = parseInt(numericValue, 10).toLocaleString('en-US');
-    }
-
-    return `$${formattedValue || '0'}`;
-  };
-
   // Handle buy-in amount change with formatting
   const handleBuyInChange = (value: string) => {
     // Strip formatting to store raw number
-    const numericValue = value.replace(/[^0-9]/g, '');
-    setBuyInAmount(numericValue);
+    setBuyInAmount(value);
   };
-
-  // Determine text color and style based on buy-in amount
-  const getBuyInStyle = () => {
-    const amount = parseInt(buyInAmount, 10);
-    const style: any = {};
-
-    // Start with yellow at 0
-    if (amount === 0) {
-      style.color = colorScheme === 'dark' ? '#ffeb3b' : '#fbc02d'; // Yellow
-      return style;
-    }
-
-    // Find which power range the amount falls into
-    let powerIndex = 0;
-    let lowerBound = 0;
-
-    while (lowerBound * 3 < amount) {
-      lowerBound = Math.max(1, lowerBound * 3);
-      powerIndex++;
-    }
-
-    // Create progressively darker shades of green with more contrast
-    // Adjust brightness based on dark/light mode
-    if (colorScheme === 'dark') {
-      // Brighter greens for dark mode with increased contrast
-      switch (powerIndex) {
-        case 0: style.color = '#c5e1a5'; break; // Very light green (lightest)
-        case 1: style.color = '#9ccc65'; break; // Light green
-        case 2: style.color = '#7cb342'; break; // Medium light green
-        case 3: style.color = '#689f38'; break; // Medium green
-        case 4: style.color = '#558b2f'; break; // Medium dark green
-        case 5: style.color = '#33691e'; break; // Dark green
-        case 6: style.color = '#2e5e1a'; break; // Darker green
-        default: style.color = '#c5e1a5';
-          style.textShadowColor = '#33691e';
-          style.textShadowOffset = { width: 0, height: 0 };
-          style.textShadowRadius = 8;
-          style.letterSpacing = 1.5;
-          break; // Extremely dark green with stronger glow and spacing
-      }
-    } else {
-      // Darker greens for light mode with increased contrast
-      switch (powerIndex) {
-        case 0: style.color = '#dcedc8'; break; // Very light green (lightest)
-        case 1: style.color = '#aed581'; break; // Light green
-        case 2: style.color = '#8bc34a'; break; // Medium light green
-        case 3: style.color = '#66bb6a'; break; // Medium green
-        case 4: style.color = '#43a047'; break; // Medium dark green
-        case 5: style.color = '#2e7d32'; break; // Dark green
-        case 6: style.color = '#1b5e20'; break; // Darker green
-        default: style.color = '#dcedc8';
-          style.textShadowColor = '#2e7d32';
-          style.textShadowOffset = { width: 0, height: 0 };
-          style.textShadowRadius = 6;
-          style.letterSpacing = 1.5;
-          break; // Extremely dark green with glow and spacing
-      }
-    }
-
-    return style;
-  };
-
-  const displayBuyInAmount = formatCurrency(buyInAmount);
 
   // Handle starting the game
   const handleStartGame = () => {
@@ -342,14 +263,9 @@ export default function SetupGameScreen() {
             <ThemedText style={styles.sectionHeader}>
               Buy <Text style={styles.moneyBagEmoji}>💰</Text> In
             </ThemedText>
-            <ThemedInput
-              keyboardType="numeric"
-              value={displayBuyInAmount}
+            <MoneyInput
+              value={buyInAmount}
               onChangeText={handleBuyInChange}
-              style={[
-                styles.buyInInput,
-                getBuyInStyle()
-              ]}
             />
             <ThemedText style={styles.buyInSubLabel}>(per player)</ThemedText>
           </View>
