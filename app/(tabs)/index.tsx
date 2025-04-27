@@ -93,20 +93,20 @@ function ChipConfigItem({
   const colorScheme = useColorScheme() ?? 'light';
   const borderColor = Colors[colorScheme].icon;
   return (
-    <View style={styles.chipRow}>
-      <View style={[styles.chipColorCircle, { backgroundColor: chip.color, borderColor }]}>
-        <View style={[styles.chipColorCircleInner, { borderColor, backgroundColor: chip.id === 'black' && colorScheme === 'dark' ? '#444' : chip.color }]} />
+    <View style={chipConfigurationStyles.chipRow}>
+      <View style={[chipConfigurationStyles.chipColorCircle, { backgroundColor: chip.color, borderColor }]}>
+        <View style={[chipConfigurationStyles.chipColorCircleInner, { borderColor, backgroundColor: chip.id === 'black' && colorScheme === 'dark' ? '#444' : chip.color }]} />
       </View>
-      <ThemedText style={styles.chipName}>{chip.displayName}</ThemedText>
+      <ThemedText style={chipConfigurationStyles.chipName}>{chip.displayName}</ThemedText>
       <ThemedInput
-        style={newStyles.chipValueInputSmall}
+        style={chipConfigurationStyles.chipValueInputSmall}
         keyboardType="numeric"
         value={chip.value.toString()}
         onChangeText={text => { const value = parseFloat(text) || 0; onValueChange(chip.id, value); }}
         placeholder="$"
       />
       <ThemedInput
-        style={styles.chipQuantityInput}
+        style={chipConfigurationStyles.chipQuantityInput}
         keyboardType="numeric"
         value={chip.quantity.toString()}
         onChangeText={text => { const quantity = parseInt(text) || 0; onQuantityChange(chip.id, quantity); }}
@@ -281,12 +281,12 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
   const bbPerPlayer = bigBlind > 0 ? Math.round(buyIn / bigBlind) : 0;
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={newStyles.modalOverlay}>
-        <View style={[newStyles.modalContent, { backgroundColor: modalBg, borderColor }]}>
+      <View style={chipConfigurationStyles.modalOverlay}>
+        <View style={[chipConfigurationStyles.modalContent, { backgroundColor: modalBg, borderColor }]}>
           <ThemedText style={styles.sectionHeader}>Chip Wizard</ThemedText>
 
           <View>
-            <ThemedText style={newStyles.chipConfigLabel}>Big Blind</ThemedText>
+            <ThemedText style={chipConfigurationStyles.chipConfigLabel}>Big Blind</ThemedText>
             <MoneyInput
               value={bigBlindAmount}
               onChangeText={onBigBlindChange}
@@ -297,11 +297,11 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
             </ThemedText>
           </View>
 
-          <View style={newStyles.chipSetContainer}>
-            <ThemedText style={newStyles.chipConfigLabel}>Available Chips</ThemedText>
+          <View style={chipConfigurationStyles.chipSetContainer}>
+            <ThemedText style={chipConfigurationStyles.chipConfigLabel}>Available Chips</ThemedText>
             <ChipSetSelector selectedSet={chipSetType} onSetChange={onChipSetChange} />
           </View>
-          <View style={newStyles.modalActionsRow}>
+          <View style={chipConfigurationStyles.modalActionsRow}>
             <ThemedButton title="Get Chip Spread" onPress={onClose} type="primary" />
           </View>
         </View>
@@ -428,33 +428,33 @@ export default function SetupGameScreen() {
               </TouchableOpacity></ThemedText>
             </View>
           }>
-            <View style={newStyles.chipConfigHeader}>
+            <View style={chipConfigurationStyles.chipConfigHeader}>
               {!isCustomizedChipSet ? (
                 <>
-                  <ThemedText style={newStyles.chipConfigSummaryText}>
-                    Assuming a big blind of ${bigBlindAmount} and a {chipSetType} standard chip set. <TouchableOpacity onPress={() => setShowAutogenModal(true)} style={newStyles.chipConfigEditBtn}>
+                  <ThemedText style={chipConfigurationStyles.chipConfigSummaryText}>
+                    Assuming a big blind of ${bigBlindAmount} and a {chipSetType} standard chip set. <TouchableOpacity onPress={() => setShowAutogenModal(true)} style={chipConfigurationStyles.chipConfigEditBtn}>
                     <Ionicons name="create-outline" size={18} color={Colors[colorScheme].tint} />
                   </TouchableOpacity>
                   </ThemedText>
                 </>
               ) : (
-                <ThemedText style={newStyles.chipConfigSummaryText}>
-                <TouchableOpacity onPress={() => setShowAutogenModal(true)} style={newStyles.chipConfigEditBtn}>
+                <ThemedText style={chipConfigurationStyles.chipConfigSummaryText}>
+                <TouchableOpacity onPress={() => setShowAutogenModal(true)} style={chipConfigurationStyles.chipConfigEditBtn}>
                   <Ionicons name="create-outline" size={18} color={Colors[colorScheme].tint} />
-                  <ThemedText style={newStyles.chipConfigEditText}>autogenerate config</ThemedText>
+                  <ThemedText style={chipConfigurationStyles.chipConfigEditText}>autogenerate config</ThemedText>
                 </TouchableOpacity>
               </ThemedText>
 
               )}
             </View>
 
-            <View style={styles.chipHeaderRow}>
-              <ThemedText style={styles.chipHeaderColor}>Color</ThemedText>
-              <ThemedText style={styles.chipHeaderName}>Name</ThemedText>
-              <ThemedText style={styles.chipHeaderValue}>Value</ThemedText>
-              <ThemedText style={styles.chipHeaderQuantity}>Quantity</ThemedText>
+            <View style={chipConfigurationStyles.chipHeaderRow}>
+              <ThemedText style={chipConfigurationStyles.chipHeaderColor}>Color</ThemedText>
+              <ThemedText style={chipConfigurationStyles.chipHeaderName}>Name</ThemedText>
+              <ThemedText style={chipConfigurationStyles.chipHeaderValue}>Value</ThemedText>
+              <ThemedText style={chipConfigurationStyles.chipHeaderQuantity}>Quantity</ThemedText>
             </View>
-            <View style={styles.chipList}>
+            <View style={chipConfigurationStyles.chipList}>
               {chips.map(chip => (
                 <ChipConfigItem key={chip.id} chip={chip} onQuantityChange={handleChipQuantityChange} onValueChange={handleChipValueChange} />
               ))}
@@ -530,10 +530,6 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
     paddingVertical: 0,
   },
-  globalInput: {
-    marginBottom: 20,
-  },
-  // Buy-in specific styles
   buyInContainer: {
     width: '100%',
     alignItems: 'center',
@@ -546,17 +542,6 @@ const styles = StyleSheet.create({
     marginTop: 0,
     opacity: 0.7,
     textAlign: 'center',
-  },
-  buyInInput: {
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 10,
-    width: '80%',
-    textAlign: 'center',
-    fontSize: 24,
-    fontWeight: 'bold',
-    paddingHorizontal: 15,
-    marginBottom: 0,
   },
   sectionHeader: {
     fontSize: 18,
@@ -613,7 +598,13 @@ const styles = StyleSheet.create({
     padding: 5,
     flex: 1,
   },
-  // Chip styles
+  startGameButton: {
+    marginTop: 20,
+    marginBottom: 30,
+  },
+});
+
+const chipConfigurationStyles = StyleSheet.create({
   chipList: {
     width: '100%',
     marginBottom: 20,
@@ -680,36 +671,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     includeFontPadding: false,
   },
-  startGameButton: {
-    marginTop: 20,
-    marginBottom: 30,
-  },
-});
-
-const newStyles = StyleSheet.create({
-  bigBlindContainer: {
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  autoCalculatedText: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    opacity: 0.7,
-  },
   chipSetContainer: {
     width: '100%',
     marginBottom: 15,
-  },
-  chipSetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  customizedText: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    marginLeft: 6,
-    color: '#f57c00',
   },
   chipConfigHeader: {
     flexDirection: 'column',
@@ -718,35 +682,10 @@ const newStyles = StyleSheet.create({
     width: '100%',
     marginBottom: 0,
   },
-  chipConfigControlsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 6,
-    gap: 12,
-  },
-  chipConfigControlItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 10,
-    gap: 4,
-  },
   chipConfigLabel: {
     fontSize: 14,
     marginRight: 2,
     opacity: 0.8,
-  },
-  chipConfigInput: {
-    width: 60,
-    height: 30,
-    fontSize: 14,
-    textAlign: 'center',
-    marginHorizontal: 2,
-  },
-  resetButton: {
-    padding: 5,
-    height: 30,
-    marginRight: 10,
   },
   chipValueInput: {
     width: 60,
@@ -761,13 +700,6 @@ const newStyles = StyleSheet.create({
     marginHorizontal: 5,
     fontSize: 14,
     paddingVertical: 0,
-  },
-  chipConfigSummaryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 2,
-    gap: 8,
   },
   chipConfigSummaryText: {
     paddingBottom: 10,
@@ -784,10 +716,6 @@ const newStyles = StyleSheet.create({
     color: '#1976d2',
     textTransform: 'lowercase',
   },
-  chipConfigHeaderSpacer: {
-    height: 2,
-  },
-  // Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -804,27 +732,9 @@ const newStyles = StyleSheet.create({
     shadowRadius: 14,
     elevation: 8,
   },
-  modalRow: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginVertical: 12,
-  },
-  modalRowCompact: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 4,
-  },
   modalActionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginTop: 16,
-  },
-  bigBlindInputSmall: {
-    width: 60,
-    height: 32,
-    fontSize: 15,
-    textAlign: 'center',
-    marginHorizontal: 4,
-    paddingVertical: 0,
   },
 });
