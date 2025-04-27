@@ -22,6 +22,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useGameContext } from '@/context/GameContext';
+import { Collapsible } from '@/components/Collapsible';
 
 // Define chip types with their colors and values
 type ChipType = {
@@ -317,6 +318,7 @@ export default function SetupGameScreen() {
   const [chipSetType, setChipSetType] = useState('300pc');
   const [isCustomizedChipSet, setIsCustomizedChipSet] = useState(false);
   const [showAutogenModal, setShowAutogenModal] = useState(false);
+  const [showChipExplainer, setShowChipExplainer] = useState(false);
   const colorScheme = useColorScheme() ?? 'light';
   const { startGame } = useGameContext();
 
@@ -414,16 +416,26 @@ export default function SetupGameScreen() {
           </View>
 
           {/* Chip Configuration with heading, summary, and edit */}
-          <View style={newStyles.chipConfigHeader}>
-            <ThemedText style={styles.sectionHeader}>Chip Configuration</ThemedText>
-            {!isCustomizedChipSet ? (
+          <Collapsible title={
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <ThemedText style={[styles.sectionHeader, { paddingLeft: 0, paddingTop: 7 }]}>Chip Configuration
+              <TouchableOpacity
+                onPress={() => setShowChipExplainer(true)}
+                style={{ marginLeft: 4 }}
+                accessibilityLabel="Chip configuration explainer"
+              >
+                <Ionicons name="help-circle-outline" size={18} color={Colors[colorScheme].tint} />
+              </TouchableOpacity></ThemedText>
+            </View>
+          }>
+            <View style={newStyles.chipConfigHeader}>
+              {!isCustomizedChipSet ? (
                 <>
                   <ThemedText style={newStyles.chipConfigSummaryText}>
                     Assuming a big blind of ${bigBlindAmount} and a {chipSetType} standard chip set. <TouchableOpacity onPress={() => setShowAutogenModal(true)} style={newStyles.chipConfigEditBtn}>
                     <Ionicons name="create-outline" size={18} color={Colors[colorScheme].tint} />
                   </TouchableOpacity>
                   </ThemedText>
-
                 </>
               ) : (
                 <ThemedText style={newStyles.chipConfigSummaryText}>
@@ -434,19 +446,20 @@ export default function SetupGameScreen() {
               </ThemedText>
 
               )}
-          </View>
+            </View>
 
-          <View style={styles.chipHeaderRow}>
-            <ThemedText style={styles.chipHeaderColor}>Color</ThemedText>
-            <ThemedText style={styles.chipHeaderName}>Name</ThemedText>
-            <ThemedText style={styles.chipHeaderValue}>Value</ThemedText>
-            <ThemedText style={styles.chipHeaderQuantity}>Quantity</ThemedText>
-          </View>
-          <View style={styles.chipList}>
-            {chips.map(chip => (
-              <ChipConfigItem key={chip.id} chip={chip} onQuantityChange={handleChipQuantityChange} onValueChange={handleChipValueChange} />
-            ))}
-          </View>
+            <View style={styles.chipHeaderRow}>
+              <ThemedText style={styles.chipHeaderColor}>Color</ThemedText>
+              <ThemedText style={styles.chipHeaderName}>Name</ThemedText>
+              <ThemedText style={styles.chipHeaderValue}>Value</ThemedText>
+              <ThemedText style={styles.chipHeaderQuantity}>Quantity</ThemedText>
+            </View>
+            <View style={styles.chipList}>
+              {chips.map(chip => (
+                <ChipConfigItem key={chip.id} chip={chip} onQuantityChange={handleChipQuantityChange} onValueChange={handleChipValueChange} />
+              ))}
+            </View>
+          </Collapsible>
           <ThemedButton title="Start Game" onPress={handleStartGame} icon={<Ionicons name="play" size={24} color="#FFFFFF" />} style={styles.startGameButton} type="primary" />
         </ScrollView>
         {/* Modal for editing chip autogen controls */}
@@ -459,6 +472,20 @@ export default function SetupGameScreen() {
           onChipSetChange={setChipSetType}
           buyInAmount={buyInAmount}
         />
+        {/* Chip Explainer Modal */}
+        <Modal visible={showChipExplainer} transparent animationType="fade" onRequestClose={() => setShowChipExplainer(false)}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0008' }}>
+            <View style={{ backgroundColor: Colors[colorScheme].background, padding: 24, borderRadius: 12, maxWidth: 320 }}>
+              <ThemedText style={[styles.subLabel, { marginBottom: 16 }]}>
+                Optionally, set up the value and amount of chips per player. The chip wizard can help you find a reasonable configuration based on buy-in, amount of chips, and amount of players!
+              </ThemedText>
+              <ThemedText style={[styles.subLabel, { marginBottom: 16 }]}>
+                Also, by setting the chip configuration you can settle up at the end with just raw chip counts instead of calculating dollar amounts.
+              </ThemedText>
+              <ThemedButton title="Close" onPress={() => setShowChipExplainer(false)} />
+            </View>
+          </View>
+        </Modal>
       </ThemedView>
     </SafeAreaView>
   );
