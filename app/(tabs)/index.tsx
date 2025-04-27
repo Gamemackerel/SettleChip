@@ -289,6 +289,7 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
             <MoneyInput
               value={bigBlindAmount}
               onChangeText={onBigBlindChange}
+              staticColor="#aed581" // Solid green for big blind
             />
             <ThemedText style={styles.subLabel}>
               {bigBlind > 0 && buyIn > 0 ? `(${bbPerPlayer} bb / player)` : '(—)'}
