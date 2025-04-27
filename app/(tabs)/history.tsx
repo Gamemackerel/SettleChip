@@ -38,15 +38,15 @@ const HistoryScreen = () => {
 
   const colorScheme = useColorScheme() ?? 'light';
   const textColor = useThemeColor({}, 'text');
-  const cardBg = useThemeColor({}, 'backgroundSecondary');
+  const cardBg = useThemeColor({}, 'background');
   const modalBg = useThemeColor({}, 'background');
   const borderColor = useThemeColor({}, 'icon');
 
   // Find winner for each game (max profitLoss)
-  function getWinner(players) {
-    if (!players || players.length === 0) return null;
-    let max = Math.max(...players.map(p => p.profitLoss));
-    return players.filter(p => p.profitLoss === max).map(p => p.name);
+  function getWinner(players: GameHistoryEntry['players']): string[] {
+    if (!players || players.length === 0) return [];
+    let max = Math.max(...players.map((p: GameHistoryEntry['players'][number]) => p.profitLoss));
+    return players.filter((p: GameHistoryEntry['players'][number]) => p.profitLoss === max).map((p: GameHistoryEntry['players'][number]) => p.name);
   }
 
   return (
@@ -62,7 +62,7 @@ const HistoryScreen = () => {
               <TouchableOpacity style={[styles.entryCard, { backgroundColor: cardBg, borderColor }]} onPress={() => handlePress(item)}>
                 <ThemedText style={styles.entryDate}>{new Date(item.date).toLocaleString()}</ThemedText>
                 <ThemedText style={styles.entryPlayers}>
-                  {item.players.map((p, idx) => (
+                  {item.players.map((p: GameHistoryEntry['players'][number], idx: number) => (
                     <ThemedText
                       key={p.name}
                       style={winners.includes(p.name) ? { color: '#4CAF50', fontWeight: 'bold' } : undefined}
@@ -91,7 +91,7 @@ const HistoryScreen = () => {
               {selected && (
                 <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
                   <ThemedText type="subtitle" style={styles.modalTitle}>Game on {new Date(selected.date).toLocaleString()}</ThemedText>
-                  {selected.players.map((p, i) => (
+                  {selected.players.map((p: GameHistoryEntry['players'][number], i: number) => (
                     <View key={i} style={styles.playerRow}>
                       <ThemedText style={styles.playerName}>{p.name}</ThemedText>
                       <ThemedText style={styles.playerStat}>Initial Buy-in: ${p.initialBuyIn.toLocaleString()}</ThemedText>
