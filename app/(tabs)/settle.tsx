@@ -25,10 +25,10 @@ const TransactionCard = ({ transaction }: { transaction: Transaction }) => {
   const backgroundColor = useThemeColor({}, 'background');
   const borderColor = useThemeColor({}, 'border');
   const textColor = useThemeColor({}, 'text');
-  
+
   // Handle write-off display
   const hasWriteOff = transaction.writeOff && transaction.writeOff > 0;
-  
+
   return (
     <View style={[styles.transactionCard, { backgroundColor, borderColor }]}>
       <View style={styles.transactionArrow}>
@@ -41,7 +41,7 @@ const TransactionCard = ({ transaction }: { transaction: Transaction }) => {
       <ThemedText style={styles.transactionAmount}>
         {transaction.amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
       </ThemedText>
-      
+
       {hasWriteOff && (
         <View style={styles.writeOffContainer}>
           <Ionicons name="information-circle-outline" size={16} color="#FF9800" />
@@ -63,7 +63,7 @@ export default function SettleUpScreen() {
   const accentColor = useThemeColor({}, 'buttonAccent');
   const cardBackground = useThemeColor({}, 'background');
   const borderColor = useThemeColor({}, 'border');
-  
+
   // Determine the write-off threshold based on chip values (less than 2 red chips)
   useEffect(() => {
     // Default to 10 (2 red chips at $5 each) if we don't have chip data
@@ -71,7 +71,7 @@ export default function SettleUpScreen() {
     const redChipValue = 5; // Assuming red chips are worth $5 each
     setWriteOffThreshold(redChipValue * 2);
   }, []);
-  
+
   // Calculate optimal transactions to settle debts using the new algorithm
   const settlementResult = useMemo(() => {
     if (!gameState.players.length || !gameState.isTallyBalanced) {
@@ -83,32 +83,32 @@ export default function SettleUpScreen() {
         totalWriteOff: 0
       };
     }
-    
+
     return calculateOptimalSettlement(
       gameState.players,
       useWriteOffThreshold,
       writeOffThreshold
     );
   }, [gameState.players, gameState.isTallyBalanced, useWriteOffThreshold, writeOffThreshold]);
-  
+
   const transactions = settlementResult.transactions;
   const simplificationPossible = settlementResult.simplificationPossible;
   const transactionDifference = settlementResult.transactionDifference;
   const totalWriteOff = settlementResult.totalWriteOff;
-  
+
   const handleNewGame = () => {
     router.navigate("/(tabs)");
   };
-  
+
   const toggleWriteOffThreshold = () => {
     setUseWriteOffThreshold(!useWriteOffThreshold);
   };
-  
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
@@ -117,8 +117,8 @@ export default function SettleUpScreen() {
           <ThemedText type="title" style={styles.title}>Settle Up</ThemedText>
           <View style={styles.placeholder} />
         </View>
-        
-        <ScrollView 
+
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
         >
@@ -144,8 +144,8 @@ export default function SettleUpScreen() {
                         Simplify transactions
                       </ThemedText>
                       <ThemedText style={styles.settingDescription}>
-                        {transactionDifference === 1 
-                          ? "1 fewer transaction" 
+                        {transactionDifference === 1
+                          ? "1 fewer transaction"
                           : `${transactionDifference} fewer transactions`} if you write off small amounts under ${writeOffThreshold.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
                       </ThemedText>
                     </View>
@@ -159,7 +159,7 @@ export default function SettleUpScreen() {
                   </View>
                 </View>
               )}
-              
+
               {useWriteOffThreshold && totalWriteOff > 0 && (
                 <View style={styles.writeOffSummary}>
                   <Ionicons name="information-circle" size={20} color="#FF9800" />
@@ -168,13 +168,13 @@ export default function SettleUpScreen() {
                   </ThemedText>
                 </View>
               )}
-              
+
               <View style={styles.sectionContainer}>
                 <ThemedText style={styles.sectionTitle}>Recommended Transactions</ThemedText>
                 <ThemedText style={styles.sectionDescription}>
                   The following transactions will settle all debts with the minimum number of payments:
                 </ThemedText>
-                
+
                 {transactions.length > 0 ? (
                   <FlatList
                     data={transactions}
@@ -195,12 +195,12 @@ export default function SettleUpScreen() {
             </>
           )}
         </ScrollView>
-        
+
         <View style={styles.bottomButtonContainer}>
           <ThemedButton
             title="New Game"
             onPress={handleNewGame}
-            type="accent"
+            type="primary"
             icon={<Ionicons name="refresh" size={24} color="#FFFFFF" />}
           />
         </View>

@@ -315,7 +315,7 @@ const ChipTallyModal = ({
                   title="Save"
                   onPress={handleSaveTally}
                   style={{ flex: 1 }}
-                  type="accent"
+                  type="primary"
                 />
               </View>
             </>
@@ -404,7 +404,7 @@ export default function TallyUpScreen() {
           <ThemedButton
             title="Settle Up"
             onPress={handleSettleUp}
-            type="accent"
+            type="primary"
             icon={<Ionicons name="cash-outline" size={24} color="#FFFFFF" />}
             disabled={!areAllPlayersComplete()}
           />

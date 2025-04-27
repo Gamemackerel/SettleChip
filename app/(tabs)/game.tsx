@@ -170,7 +170,7 @@ const PlayerActionModal = ({
                     title="Add"
                     onPress={handleAddFunds}
                     style={{ flex: 1 }}
-                    type="accent"
+                    type="primary"
                   />
                 </View>
               </View>
@@ -264,7 +264,7 @@ export default function GameScreen() {
           <ThemedButton
             title="Finish Game"
             onPress={handleFinishGame}
-            type="accent"
+            type="primary"
             icon={<Ionicons name="checkmark-circle-outline" size={24} color="#FFFFFF" />}
           />
         </View>
