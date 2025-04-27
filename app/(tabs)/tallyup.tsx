@@ -24,6 +24,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useGameContext } from '@/context/GameContext';
 import { Player } from '@/context/GameContext';
+import { saveGameToHistory } from '@/utils/gameHistory';
 
 // Player tally card component with progress indicator
 const PlayerTallyCard = ({
@@ -349,7 +350,33 @@ export default function TallyUpScreen() {
     }
   };
 
-  const handleSettleUp = () => {
+  const handleSettleUp = async () => {
+    // Gather player history data
+    const players = gameState.players.map(player => {
+      const initialBuyIn = gameState.buyInAmount;
+      const totalBuyIn = player.buyIn;
+      const finalAmount = player.finalAmount ?? 0;
+      const profitLoss = finalAmount - totalBuyIn;
+      return {
+        name: player.name,
+        initialBuyIn,
+        totalBuyIn,
+        finalAmount,
+        profitLoss,
+      };
+    });
+    const entry = {
+      id: `${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+      date: new Date().toISOString(),
+      players,
+    };
+    console.log('[SettleUp] Saving entry:', entry);
+    try {
+      await saveGameToHistory(entry);
+      console.log('[SettleUp] Entry saved successfully');
+    } catch (err) {
+      console.error('[SettleUp] Error saving entry:', err);
+    }
     router.navigate("/(tabs)/settle");
   };
 

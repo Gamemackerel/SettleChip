@@ -128,7 +128,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const totalBuyIn = getTotalBuyIn();
     const totalCashOut = getTotalCashOut();
     const isBalanced = Math.abs(totalBuyIn - totalCashOut) < 0.01; // Allow for tiny floating point differences
-    
+
     setGameState(prev => ({
       ...prev,
       isTallyBalanced: isBalanced,
@@ -137,7 +137,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         hasError: player.isComplete ? !isBalanced : false,
       })),
     }));
-    
+
     return isBalanced;
   };
 
@@ -148,20 +148,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
           ? { ...player, finalAmount: amount, isComplete: true, hasError: false }
           : player
       );
-      
+
       const updatedState = {
         ...prev,
         players: updatedPlayers,
       };
-      
+
       // Check if all players have completed their tally
       const allComplete = updatedPlayers.every(player => player.isComplete);
-      
+
       if (allComplete) {
         const totalBuyIn = updatedPlayers.reduce((total, p) => total + p.buyIn, 0);
         const totalCashOut = updatedPlayers.reduce((total, p) => total + (p.finalAmount || 0), 0);
         const isBalanced = Math.abs(totalBuyIn - totalCashOut) < 0.01;
-        
+
         return {
           ...updatedState,
           isTallyBalanced: isBalanced,
@@ -171,7 +171,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           })),
         };
       }
-      
+
       return updatedState;
     });
   };
