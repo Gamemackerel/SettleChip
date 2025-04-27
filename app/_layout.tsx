@@ -3,11 +3,12 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { GameProvider } from '@/context/GameContext';
+import { setupDatabase } from '@/utils/gameHistory';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -17,14 +18,19 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  const [dbReady, setDbReady] = useState(false);
 
   useEffect(() => {
-    if (loaded) {
+    setupDatabase().then(() => setDbReady(true));
+  }, []);
+
+  useEffect(() => {
+    if (loaded && dbReady) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, dbReady]);
 
-  if (!loaded) {
+  if (!loaded || !dbReady) {
     return null;
   }
 
