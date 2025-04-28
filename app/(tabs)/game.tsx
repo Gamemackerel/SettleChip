@@ -84,7 +84,7 @@ const PlayerActionModal = ({
   const modalBackground = colorScheme === 'dark' ? '#222' : '#fff';
 
   const handleAddFunds = () => {
-    const numAmount = parseInt(amount, 10);
+    const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
       Alert.alert('Invalid Amount', 'Please enter a valid amount');
       return;

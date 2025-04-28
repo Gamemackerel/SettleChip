@@ -343,24 +343,7 @@ export default function SetupGameScreen() {
       setChips(updatedChips);
     }
   };
-  const handleBigBlindChange = (value: string) => {
-    setBigBlindAmount(value);
-    if (!isCustomizedChipSet) {
-      const updatedChips = calculateChipDistribution(parseFloat(buyInAmount) || 0, parseFloat(value) || 0, chipSetType, chips);
-      setChips(updatedChips);
-    }
-  };
-  const handleChipSetChange = (setId: string) => {
-    setChipSetType(setId);
-    setIsCustomizedChipSet(false);
-    const updatedChips = calculateChipDistribution(parseFloat(buyInAmount) || 0, parseFloat(bigBlindAmount) || 0, setId, chips);
-    setChips(updatedChips);
-  };
-  const resetToRecommended = () => {
-    const updatedChips = calculateChipDistribution(parseFloat(buyInAmount), parseFloat(bigBlindAmount), chipSetType, chips);
-    setChips(updatedChips);
-    setIsCustomizedChipSet(false);
-  };
+
   const handleAddPlayer = (name: string) => {
     if (name && !players.includes(name)) setPlayers([...players, name]);
   };
@@ -374,7 +357,7 @@ export default function SetupGameScreen() {
       Alert.alert('Not Enough Players', 'Please add at least 2 players to start a game.');
       return;
     }
-    const buyInValue = parseInt(buyInAmount, 10);
+    const buyInValue = parseFloat(buyInAmount);
     if (buyInValue <= 0) {
       Alert.alert('Invalid Buy-In', 'Please set a buy-in amount greater than 0.');
       return;
@@ -385,9 +368,9 @@ export default function SetupGameScreen() {
 
   // INIT: set big blind and chips on mount
   useEffect(() => {
-    const initialBigBlind = calculateRecommendedBigBlind(parseInt(buyInAmount, 10));
+    const initialBigBlind = calculateRecommendedBigBlind(parseFloat(buyInAmount));
     setBigBlindAmount(initialBigBlind.toString());
-    const initialChips = calculateChipDistribution(parseInt(buyInAmount, 10), initialBigBlind, chipSetType, chips);
+    const initialChips = calculateChipDistribution(parseFloat(buyInAmount), initialBigBlind, chipSetType, chips);
     setChips(initialChips);
   }, []);
 

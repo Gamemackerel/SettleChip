@@ -138,7 +138,7 @@ const ChipTallyModal = ({
   const buttonPrimaryColor = useThemeColor({}, 'buttonPrimary');
   const modalBackground = colorScheme === 'dark' ? '#222' : '#fff';
 
-  const [directAmount, setDirectAmount] = useState(0);
+  const [directAmount, setDirectAmount] = useState('0');
   const [useChipCounting, setUseChipCounting] = useState(false);
   const [chipCounts, setChipCounts] = useState<{ color: string; value: number; count: number }[]>([
     { color: 'white', value: 1, count: 0 },
@@ -153,7 +153,7 @@ const ChipTallyModal = ({
   useEffect(() => {
     if (visible && player) {
       if (player.finalAmount !== undefined) {
-        setDirectAmount(player.finalAmount);
+        setDirectAmount(player.finalAmount.toString());
         setChipCounts([
           { color: 'white', value: 1, count: 0 },
           { color: 'red', value: 5, count: 0 },
@@ -162,7 +162,7 @@ const ChipTallyModal = ({
           { color: 'black', value: 100, count: 0 },
         ]);
       } else {
-        setDirectAmount(0);
+        setDirectAmount('0');
         setUseChipCounting(false);
         setChipCounts([
           { color: 'white', value: 1, count: 0 },
@@ -176,8 +176,7 @@ const ChipTallyModal = ({
   }, [visible, player?.id]);
 
   const handleDirectAmountChange = (text: string) => {
-    const amount = parseInt(text) || 0;
-    setDirectAmount(amount);
+    setDirectAmount(text);
   };
 
   const calculateTotalFromChips = () => {
@@ -196,11 +195,12 @@ const ChipTallyModal = ({
       const totalAmount = calculateTotalFromChips();
       onSaveTally(totalAmount, 'chips');
     } else {
-      if (directAmount < 0) {
+      const amountNum = parseFloat(directAmount) || 0;
+      if (amountNum < 0) {
         Alert.alert('Invalid Amount', 'Please enter a valid amount');
         return;
       }
-      onSaveTally(directAmount, 'direct');
+      onSaveTally(amountNum, 'direct');
     }
     onClose();
   };
@@ -252,7 +252,7 @@ const ChipTallyModal = ({
           Enter Final Amount <Text style={{ fontSize: 24 }}>💰</Text>
         </ThemedText>
         <MoneyInput
-          value={directAmount.toString()}
+          value={directAmount}
           onChangeText={handleDirectAmountChange}
           autoFocus={true}
         />

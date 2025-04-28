@@ -40,14 +40,14 @@ export function MoneyInput({
     if (parts.length > 2) {
       numericValue = parts[0] + '.' + parts.slice(1).join('');
     }
-    // Limit to 2 decimal places
+    // Limit to 3 decimal places
     const [whole, decimal] = numericValue.split('.');
     let formattedValue = '';
     if (whole) {
       formattedValue = parseInt(whole, 10).toLocaleString('en-US');
     }
     if (decimal !== undefined) {
-      formattedValue += '.' + decimal.slice(0, 2);
+      formattedValue += '.' + decimal.slice(0, 3);
     }
     return `$${formattedValue || '0'}`;
   };
@@ -61,10 +61,10 @@ export function MoneyInput({
     if (parts.length > 2) {
       numericValue = parts[0] + '.' + parts.slice(1).join('');
     }
-    // Limit to 2 decimal places
+    // Limit to 3 decimal places
     if (numericValue.includes('.')) {
       const [whole, decimal] = numericValue.split('.');
-      numericValue = whole + '.' + (decimal ? decimal.slice(0, 2) : '');
+      numericValue = whole + '.' + (decimal ? decimal.slice(0, 3) : '');
     }
     onChangeText(numericValue);
   };
