@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -21,6 +21,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useGameContext } from '@/context/GameContext';
 import { Collapsible } from '@/components/Collapsible';
+import { findAllSolutions, findBestSolution } from '@/utils/distributionAlgorithm';
 
 // Define chip types with their colors and values
 type ChipType = {
@@ -235,33 +236,9 @@ function calculateRecommendedBigBlind(buyInAmount: number): number {
   if (rawBigBlind <= 5) return 5;
   return Math.ceil(rawBigBlind / 5) * 5;
 }
-function calculateChipValues(bigBlindAmount: number): Record<string, number> {
-  const smallBlind = bigBlindAmount / 2;
-  return {
-    'white': smallBlind,
-    'red': bigBlindAmount * 5,
-    'blue': bigBlindAmount * 10,
-    'green': bigBlindAmount * 25,
-    'black': bigBlindAmount * 100,
-  };
-}
-function calculateChipDistribution(buyInAmount: number, bigBlindAmount: number, chipSetType: string, chips: ChipType[]): ChipType[] {
-  const chipValues = calculateChipValues(bigBlindAmount);
-  let quantities: Record<string, number>;
-  if (chipSetType === '300pc') {
-    quantities = { 'white': 40, 'red': 60, 'blue': 60, 'green': 60, 'black': 80 };
-  } else if (chipSetType === '100pc') {
-    quantities = { 'white': 25, 'red': 25, 'blue': 25, 'green': 15, 'black': 10 };
-  } else if (chipSetType === '500pc') {
-    quantities = { 'white': 100, 'red': 150, 'blue': 150, 'green': 150, 'black': 200 };
-  } else {
-    quantities = chips.reduce((acc, chip) => { acc[chip.id] = chip.quantity; return acc; }, {} as Record<string, number>);
-  }
-  return defaultChips.map(chip => ({ ...chip, value: chipValues[chip.id] || chip.value, quantity: quantities[chip.id] || chip.quantity }));
-}
 
 // --- CHIP AUTOGEN MODAL ---
-function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBigBlindChange, onChipSetChange, buyInAmount }: {
+function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBigBlindChange, onChipSetChange, buyInAmount, onAutogenerate }: {
   visible: boolean;
   onClose: () => void;
   bigBlindAmount: string;
@@ -269,6 +246,7 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
   onBigBlindChange: (val: string) => void;
   onChipSetChange: (val: string) => void;
   buyInAmount: string;
+  onAutogenerate: () => void;
 }) {
   const colorScheme = useColorScheme() ?? 'light';
   const modalBg = Colors[colorScheme].background;
@@ -300,7 +278,7 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
             <ChipSetSelector selectedSet={chipSetType} onSetChange={onChipSetChange} />
           </View>
           <View style={chipConfigurationStyles.modalActionsRow}>
-            <ThemedButton title="Get Chip Spread" onPress={onClose} type="primary" />
+            <ThemedButton title="Get Chip Spread" onPress={onAutogenerate} type="primary" />
           </View>
         </View>
       </View>
@@ -317,6 +295,8 @@ export default function SetupGameScreen() {
   const [isCustomizedChipSet, setIsCustomizedChipSet] = useState(false);
   const [showAutogenModal, setShowAutogenModal] = useState(false);
   const [showChipExplainer, setShowChipExplainer] = useState(false);
+  const [isChipConfigOpen, setIsChipConfigOpen] = useState(false);
+  const [calculatedChips, setCalculatedChips] = useState<ChipType[]>([]);
   const colorScheme = useColorScheme() ?? 'light';
   const { startGame } = useGameContext();
 
@@ -338,10 +318,6 @@ export default function SetupGameScreen() {
     const buyIn = parseFloat(value) || 0;
     const newBigBlind = calculateRecommendedBigBlind(buyIn);
     setBigBlindAmount(newBigBlind.toString());
-    if (!isCustomizedChipSet) {
-      const updatedChips = calculateChipDistribution(buyIn, newBigBlind, chipSetType, chips);
-      setChips(updatedChips);
-    }
   };
 
   const handleAddPlayer = (name: string) => {
@@ -366,13 +342,39 @@ export default function SetupGameScreen() {
     router.push('/game');
   };
 
-  // INIT: set big blind and chips on mount
+  // Calculate chip distribution when chip config is opened or when autogenerate is pressed
+  const calculateChipSpread = useCallback((buyIn: number, bigBlind: number, playerCount: number) => {
+    if (!isCustomizedChipSet) {
+      const availableChips = defaultChips.map(chip => chip.quantity);
+      const solutions = findAllSolutions(buyIn, bigBlind, playerCount, availableChips);
+      const bestSolution = findBestSolution(solutions);
+      if (bestSolution) {
+        const updatedChips = defaultChips.map((chip, index) => ({
+          ...chip,
+          value: bestSolution.chipValues[index] || 0,
+          quantity: bestSolution.distribution[index] || 0
+        }));
+        setCalculatedChips(updatedChips);
+      }
+    }
+  }, [isCustomizedChipSet]);
+
+  // Calculate distribution when chip config is opened
   useEffect(() => {
-    const initialBigBlind = calculateRecommendedBigBlind(parseFloat(buyInAmount));
-    setBigBlindAmount(initialBigBlind.toString());
-    const initialChips = calculateChipDistribution(parseFloat(buyInAmount), initialBigBlind, chipSetType, chips);
-    setChips(initialChips);
-  }, []);
+    if (isChipConfigOpen) {
+      const buyIn = parseFloat(buyInAmount);
+      const bigBlind = parseFloat(bigBlindAmount);
+      calculateChipSpread(buyIn, bigBlind, players.length);
+    }
+  }, [isChipConfigOpen, buyInAmount, bigBlindAmount, players.length, calculateChipSpread]);
+
+  // Calculate distribution when autogenerate is pressed
+  const handleAutogenerate = () => {
+    const buyIn = parseFloat(buyInAmount);
+    const bigBlind = parseFloat(bigBlindAmount);
+    calculateChipSpread(buyIn, bigBlind, players.length);
+    setShowAutogenModal(false);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -408,7 +410,7 @@ export default function SetupGameScreen() {
                 <Ionicons name="help-circle-outline" size={18} color={Colors[colorScheme].tint} />
               </TouchableOpacity></ThemedText>
             </View>
-          }>
+          } onOpen={() => setIsChipConfigOpen(true)} onClose={() => setIsChipConfigOpen(false)}>
             <View style={chipConfigurationStyles.chipConfigHeader}>
               {!isCustomizedChipSet ? (
                 <>
@@ -436,7 +438,9 @@ export default function SetupGameScreen() {
               <ThemedText style={chipConfigurationStyles.chipHeaderQuantity}>Quantity</ThemedText>
             </View>
             <View style={chipConfigurationStyles.chipList}>
-              {chips.map(chip => (
+              {isCustomizedChipSet ? chips.map(chip => (
+                <ChipConfigItem key={chip.id} chip={chip} onQuantityChange={handleChipQuantityChange} onValueChange={handleChipValueChange} />
+              )) : calculatedChips.map(chip => (
                 <ChipConfigItem key={chip.id} chip={chip} onQuantityChange={handleChipQuantityChange} onValueChange={handleChipValueChange} />
               ))}
             </View>
@@ -452,6 +456,7 @@ export default function SetupGameScreen() {
           onBigBlindChange={val => { setBigBlindAmount(val); }}
           onChipSetChange={setChipSetType}
           buyInAmount={buyInAmount}
+          onAutogenerate={handleAutogenerate}
         />
         {/* Chip Explainer Modal */}
         <Modal visible={showChipExplainer} transparent animationType="fade" onRequestClose={() => setShowChipExplainer(false)}>

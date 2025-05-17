@@ -317,7 +317,7 @@ function findChipDistributions(multiplierData: MultiplierData, buyIn: number, sm
 }
 
 // Function to find all valid solutions
-function findAllSolutions(buyIn: number, bigBlind: number, playerCount: number, availableChips: number[]) {
+export function findAllSolutions(buyIn: number, bigBlind: number, playerCount: number, availableChips: number[]) {
   const smallBlind = bigBlind / 2;
   const multiplierCombinations = generateMultiplierCombinations();
   let allSolutions: Solution[] = [];
@@ -328,12 +328,15 @@ function findAllSolutions(buyIn: number, bigBlind: number, playerCount: number, 
     const solutions = findChipDistributions(multiplierData, buyIn, smallBlind, playerCount, availableChips);
     allSolutions = allSolutions.concat(solutions);
   }
+  console.log(`Generated ${allSolutions.length} valid solutions`);
+
+  // console.log(allSolutions[0]);
 
   return allSolutions;
 }
 
 // Function to find the best solution for a given scenario
-function findBestSolution(solutions: Solution[]) {
+export function findBestSolution(solutions: Solution[]) {
   if (solutions.length === 0) {
     return null;
   }
@@ -346,6 +349,8 @@ function findBestSolution(solutions: Solution[]) {
 
   // Sort by distance to preferred chip count
   solutionsWithDistance.sort((a, b) => a.distance - b.distance);
+
+  console.log(solutionsWithDistance[0]);
 
   return solutionsWithDistance[0].solution;
 }
