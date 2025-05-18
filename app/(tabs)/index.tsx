@@ -409,19 +409,12 @@ export default function SetupGameScreen() {
           {/* Chip Configuration with heading, summary, and edit */}
           <Collapsible title={
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <ThemedText style={[styles.sectionHeader, { paddingLeft: 0, paddingTop: 7 }]}>Starting Chip Configuration
-              <TouchableOpacity
-                onPress={() => setShowChipExplainer(true)}
-                style={{ marginLeft: 4 }}
-                accessibilityLabel="Chip configuration explainer"
-              >
-                <Ionicons name="help-circle-outline" size={18} color={Colors[colorScheme].tint} />
-              </TouchableOpacity></ThemedText>
+              <ThemedText style={[styles.sectionHeader, { paddingLeft: 0, paddingTop: 7 }]}>Starting Chip Stacks</ThemedText>
             </View>
           } onOpen={() => setIsChipConfigOpen(true)} onClose={() => setIsChipConfigOpen(false)}>
             <View style={chipConfigurationStyles.chipConfigHeader}>
                   <ThemedText style={chipConfigurationStyles.chipConfigSummaryText}>
-                    Assuming a big blind of ${bigBlindAmount} and a {chipSetType.id} standard chip set. <TouchableOpacity onPress={() => setShowAutogenModal(true)} style={chipConfigurationStyles.chipConfigEditBtn}>
+                    Recommended assuming a big blind of ${bigBlindAmount} and a {chipSetType.id} standard chip set. <TouchableOpacity onPress={() => setShowAutogenModal(true)} style={chipConfigurationStyles.chipConfigEditBtn}>
                     <Ionicons name="create-outline" size={18} color={Colors[colorScheme].tint} />
                   </TouchableOpacity>
                   </ThemedText>
