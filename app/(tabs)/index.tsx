@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedButton } from '@/components/ThemedButton';
@@ -385,10 +385,9 @@ export default function SetupGameScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.outerContainer}>
+        <Stack.Screen options={{ headerShown: true, headerTitle: 'Setup Game', headerTitleAlign: 'center' }} />
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <ThemedText type="title" style={styles.title}>Setup Game</ThemedText>
           {/* Buy-In */}
           <View style={styles.buyInContainer}>
             <ThemedText style={styles.sectionHeader}>
@@ -457,7 +456,6 @@ export default function SetupGameScreen() {
           </View>
         </Modal>
       </ThemedView>
-    </SafeAreaView>
   );
 }
 

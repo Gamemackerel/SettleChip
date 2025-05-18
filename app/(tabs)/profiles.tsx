@@ -9,6 +9,7 @@ import { getGameHistory, GameHistoryEntry } from '@/utils/gameHistory';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useFocusEffect } from '@react-navigation/native';
+import { Stack } from 'expo-router';
 
 const ProfilesScreen = () => {
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
@@ -23,7 +24,7 @@ const ProfilesScreen = () => {
         try {
           const h = await getGameHistory();
           setHistory(h);
-          
+
           // Aggregate player data
           const playerStats: { [key: string]: { name: string; totalProfit: number; gamesPlayed: number; wins: number } } = {};
           h.forEach(game => {
@@ -63,16 +64,15 @@ const ProfilesScreen = () => {
   const borderColor = useThemeColor({}, 'icon');
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.container}>
-        <ThemedText type="title" style={styles.title}>Player Profiles</ThemedText>
+        <Stack.Screen options={{ headerShown: true, headerTitle: 'Player Profiles' }} />
         <FlatList
           data={Object.values(players)}
           keyExtractor={item => item.name}
           renderItem={({ item }) => {
             return (
-              <TouchableOpacity 
-                style={[styles.entryCard, { backgroundColor: cardBg, borderColor }]} 
+              <TouchableOpacity
+                style={[styles.entryCard, { backgroundColor: cardBg, borderColor }]}
                 onPress={() => {
                   setSelectedPlayer(item.name);
                   setModalVisible(true);
@@ -86,7 +86,7 @@ const ProfilesScreen = () => {
                   <ThemedText style={styles.stat}>
                     Wins: {item.wins}
                   </ThemedText>
-                  <ThemedText 
+                  <ThemedText
                     style={[styles.stat, { color: item.totalProfit >= 0 ? '#4CAF50' : '#F44336' }]}
                   >
                     Total Profit: {item.totalProfit >= 0 ? '+' : ''}${item.totalProfit.toLocaleString()}
@@ -128,7 +128,7 @@ const ProfilesScreen = () => {
                   </View>
                   <View style={styles.playerDetails}>
                     <ThemedText style={styles.detailLabel}>Total Profit:</ThemedText>
-                    <ThemedText 
+                    <ThemedText
                       style={[styles.detailValue, { color: players[selectedPlayer].totalProfit >= 0 ? '#4CAF50' : '#F44336' }]}
                     >
                       {players[selectedPlayer].totalProfit >= 0 ? '+' : ''}${players[selectedPlayer].totalProfit.toLocaleString()}
@@ -143,7 +143,10 @@ const ProfilesScreen = () => {
                           {new Date(game.date).toLocaleDateString()}
                         </ThemedText>
                         <ThemedText style={styles.gameHistoryProfit}>
-                          Profit: {game.players.find(p => p.name === selectedPlayer)?.profitLoss >= 0 ? '+' : ''}${game.players.find(p => p.name === selectedPlayer)?.profitLoss.toLocaleString()}
+                          Profit: {game.players.find(p => p.name === selectedPlayer)?.profitLoss ?
+                            (game.players.find(p => p.name === selectedPlayer)!.profitLoss >= 0 ? '+' : '') +
+                            game.players.find(p => p.name === selectedPlayer)!.profitLoss.toLocaleString() :
+                            'N/A'}
                         </ThemedText>
                       </View>
                     ))}
@@ -153,7 +156,6 @@ const ProfilesScreen = () => {
           </View>
         </Modal>
       </ThemedView>
-    </SafeAreaView>
   );
 };
 

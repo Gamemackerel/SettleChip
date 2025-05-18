@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -103,18 +103,8 @@ export default function SettleUpScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color={textColor} />
-          </TouchableOpacity>
-          <ThemedText type="title" style={styles.title}>Settle Up</ThemedText>
-          <View style={styles.placeholder} />
-        </View>
+        <Stack.Screen options={{ headerShown: true,headerTitleAlign: 'center', headerTitle: 'Settle Up', headerLeft: () => <TouchableOpacity onPress={() => router.navigate("/(tabs)/tallyup")}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={useThemeColor({}, 'text')} /></TouchableOpacity> }} />
 
         <ScrollView
           style={styles.scrollView}
@@ -203,7 +193,6 @@ export default function SettleUpScreen() {
           />
         </View>
       </ThemedView>
-    </SafeAreaView>
   );
 }
 
@@ -219,7 +208,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   backButton: {
-    padding: 5,
+    paddingLeft: 20,
+    paddingRight: 20,
   },
   placeholder: {
     width: 34, // Same as backButton to center the title

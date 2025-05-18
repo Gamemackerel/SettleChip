@@ -9,6 +9,7 @@ import { getGameHistory, GameHistoryEntry, deleteGameFromHistory } from '@/utils
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useFocusEffect } from '@react-navigation/native';
+import { Stack } from 'expo-router';
 
 const HistoryScreen = () => {
   const [selected, setSelected] = useState<GameHistoryEntry | null>(null);
@@ -51,9 +52,8 @@ const HistoryScreen = () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.container}>
-        <ThemedText type="title" style={styles.title}>Game History</ThemedText>
+        <Stack.Screen options={{ headerShown: true, headerTitle: 'Game History' }} />
         <FlatList
           data={history}
           keyExtractor={item => item.id}
@@ -163,7 +163,6 @@ const HistoryScreen = () => {
           </View>
         </Modal>
       </ThemedView>
-    </SafeAreaView>
   );
 };
 
