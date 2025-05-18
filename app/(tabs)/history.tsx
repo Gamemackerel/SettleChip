@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, TouchableOpacity, StyleSheet, Modal, ScrollView } from 'react-native';
+import { View, FlatList, TouchableOpacity, StyleSheet, Modal, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedButton } from '@/components/ThemedButton';
 import { Ionicons } from '@expo/vector-icons';
-import { getGameHistory, GameHistoryEntry } from '@/utils/gameHistory';
+import { getGameHistory, GameHistoryEntry, deleteGameFromHistory } from '@/utils/gameHistory';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useFocusEffect } from '@react-navigation/native';
@@ -14,6 +14,7 @@ const HistoryScreen = () => {
   const [selected, setSelected] = useState<GameHistoryEntry | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [history, setHistory] = useState<GameHistoryEntry[]>([]);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
 
   // Refresh history when tab is focused
   useFocusEffect(
@@ -39,8 +40,8 @@ const HistoryScreen = () => {
   const colorScheme = useColorScheme() ?? 'light';
   const textColor = useThemeColor({}, 'text');
   const cardBg = useThemeColor({}, 'background');
-  const modalBg = useThemeColor({}, 'background');
   const borderColor = useThemeColor({}, 'icon');
+  const modalBg = useThemeColor({}, 'background');
 
   // Find winner for each game (max profitLoss)
   function getWinner(players: GameHistoryEntry['players']): string[] {
@@ -102,7 +103,62 @@ const HistoryScreen = () => {
                   ))}
                 </ScrollView>
               )}
-              <ThemedButton title="Close" onPress={() => setModalVisible(false)} style={{ marginTop: 10 }} />
+              <View style={styles.buttonContainer}>
+                <ThemedButton
+                  title="Delete Game"
+                  onPress={() => {
+                    setDeleteConfirmVisible(true);
+                  }}
+                  type="outline"
+                  style={{ marginTop: 10 }}
+                />
+                <ThemedButton
+                  title="Close"
+                  onPress={() => setModalVisible(false)}
+                  style={{ marginTop: 10 }}
+                />
+              </View>
+              <Modal
+                visible={deleteConfirmVisible}
+                animationType="fade"
+                transparent={true}
+                onRequestClose={() => setDeleteConfirmVisible(false)}
+              >
+                <View style={[styles.modalOverlay, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.4)' }]}>
+                  <View style={[styles.modalContent, { backgroundColor: modalBg, borderColor, width: '90%', marginHorizontal: '5%' }]}>
+                    <ThemedText style={styles.deleteConfirmText}>
+                      Are you sure you want to delete this game?
+                    </ThemedText>
+                    <View style={styles.deleteButtonContainer}>
+                      <ThemedButton
+                        title="Cancel"
+                        onPress={() => setDeleteConfirmVisible(false)}
+                        type="outline"
+                        style={{ marginHorizontal: 5 }}
+                      />
+                      <ThemedButton
+                        title="Delete"
+                        onPress={async () => {
+                          try {
+                            await deleteGameFromHistory(selected?.id || '');
+                            // Refresh history after deletion
+                            const h = await getGameHistory();
+                            setHistory(h);
+                            setSelected(null);
+                            setModalVisible(false);
+                            setDeleteConfirmVisible(false);
+                          } catch (err) {
+                            console.error('[HistoryScreen] Error deleting game:', err);
+                            Alert.alert('Error', 'Failed to delete game. Please try again.');
+                          }
+                        }}
+                        type="danger"
+                        style={{ marginHorizontal: 5 }}
+                      />
+                    </View>
+                  </View>
+                </View>
+              </Modal>
             </View>
           </View>
         </Modal>
@@ -112,6 +168,21 @@ const HistoryScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  deleteButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  deleteConfirmText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
     padding: 20,

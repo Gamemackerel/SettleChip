@@ -63,6 +63,15 @@ export async function saveGameToHistory(entry: GameHistoryEntry): Promise<void> 
   }
 }
 
+// Delete a game from history
+export async function deleteGameFromHistory(gameId: string): Promise<void> {
+  const db = await getDb();
+  // Delete player sessions first to maintain referential integrity
+  await db.runAsync('DELETE FROM PlayerSessions WHERE game_id = ?', [gameId]);
+  // Then delete the game
+  await db.runAsync('DELETE FROM Games WHERE id = ?', [gameId]);
+}
+
 // Retrieve all game history with player sessions
 export async function getGameHistory(): Promise<GameHistoryEntry[]> {
   const db = await getDb();
