@@ -323,7 +323,8 @@ export function findAllSolutions(buyIn: number, bigBlind: number, playerCount: n
   let allSolutions: Solution[] = [];
 
   console.log(`Generated ${multiplierCombinations.length} valid multiplier combinations`);
-
+  console.log(`Generating solutions...`);
+  console.log('availableChips: ' + availableChips.join(', '));
   for (const multiplierData of multiplierCombinations) {
     const solutions = findChipDistributions(multiplierData, buyIn, smallBlind, playerCount, availableChips);
     allSolutions = allSolutions.concat(solutions);
@@ -341,18 +342,40 @@ export function findBestSolution(solutions: Solution[]) {
     return null;
   }
 
-  // Find solutions closest to our preferred 25 chips
-  const solutionsWithDistance = solutions.map(sol => ({
-    solution: sol,
-    distance: Math.abs(sol.totalChips - PREFERRED_TOTAL_CHIPS)
-  }));
-
   // Sort by distance to preferred chip count
-  solutionsWithDistance.sort((a, b) => a.distance - b.distance);
+  solutions.sort((a, b) => Math.abs(a.totalChips - PREFERRED_TOTAL_CHIPS) - Math.abs(b.totalChips - PREFERRED_TOTAL_CHIPS));
 
-  console.log(solutionsWithDistance[0]);
+  // First try to find solutions with exactly 25 chips and 3 colors
+  const threeColorSolutions = solutions.filter(sol =>
+    sol.totalChips === PREFERRED_TOTAL_CHIPS &&
+    sol.distribution.filter(c => c > 0).length <= 3
+  );
 
-  return solutionsWithDistance[0].solution;
+  if (threeColorSolutions.length > 0) {
+    return threeColorSolutions[0];
+  }
+
+  // If no 3-color solutions, try 4-color solutions with 25 chips
+  const fourColorSolutions = solutions.filter(sol =>
+    sol.totalChips === PREFERRED_TOTAL_CHIPS &&
+    sol.distribution.filter(c => c > 0).length === 4
+  );
+
+  if (fourColorSolutions.length > 0) {
+    return fourColorSolutions[0];
+  }
+
+  // If no 4-color solutions, fall back to any solution with 25 chips
+  const twentyFiveChipSolutions = solutions.filter(sol =>
+    sol.totalChips === PREFERRED_TOTAL_CHIPS
+  );
+
+  if (twentyFiveChipSolutions.length > 0) {
+    return twentyFiveChipSolutions[0];
+  }
+
+  // If no 25-chip solutions, fall back to closest solution
+  return solutions[0];
 }
 
 // Format solution for display

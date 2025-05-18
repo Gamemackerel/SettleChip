@@ -33,11 +33,11 @@ type ChipType = {
 };
 
 const defaultChips: ChipType[] = [
-  { id: 'white', color: '#FFFFFF', displayName: 'White', value: 1, quantity: 50 },
-  { id: 'red', color: '#E53935', displayName: 'Red', value: 5, quantity: 30 },
-  { id: 'blue', color: '#1E88E5', displayName: 'Blue', value: 10, quantity: 20 },
-  { id: 'green', color: '#43A047', displayName: 'Green', value: 25, quantity: 10 },
-  { id: 'black', color: '#212121', displayName: 'Black', value: 100, quantity: 5 },
+  { id: 'white', color: '#FFFFFF', displayName: 'White', value: 1, quantity: 100 },
+  { id: 'red', color: '#E53935', displayName: 'Red', value: 5, quantity: 50 },
+  { id: 'blue', color: '#1E88E5', displayName: 'Blue', value: 10, quantity: 50 },
+  { id: 'green', color: '#43A047', displayName: 'Green', value: 25, quantity: 50 },
+  { id: 'black', color: '#212121', displayName: 'Black', value: 100, quantity: 50 },
 ];
 
 // Custom themed input component
@@ -82,12 +82,8 @@ function ThemedInput({
 // Chip configuration item component
 function ChipConfigItem({
   chip,
-  onQuantityChange,
-  onValueChange
 }: {
   chip: ChipType;
-  onQuantityChange: (id: string, quantity: number) => void;
-  onValueChange: (id: string, value: number) => void;
 }) {
   const colorScheme = useColorScheme() ?? 'light';
   const borderColor = Colors[colorScheme].icon;
@@ -98,17 +94,17 @@ function ChipConfigItem({
       </View>
       <ThemedText style={chipConfigurationStyles.chipName}>{chip.displayName}</ThemedText>
       <ThemedInput
-        style={chipConfigurationStyles.chipValueInputSmall}
+        style={[chipConfigurationStyles.chipValueInputSmall]}
         keyboardType="numeric"
         value={chip.value.toString()}
-        onChangeText={text => { const value = parseFloat(text) || 0; onValueChange(chip.id, value); }}
         placeholder="$"
+        editable={false}
       />
       <ThemedInput
-        style={chipConfigurationStyles.chipQuantityInput}
+        style={[chipConfigurationStyles.chipQuantityInput]}
         keyboardType="numeric"
         value={chip.quantity.toString()}
-        onChangeText={text => { const quantity = parseInt(text) || 0; onQuantityChange(chip.id, quantity); }}
+        editable={false}
       />
     </View>
   );
@@ -296,23 +292,11 @@ export default function SetupGameScreen() {
   const [showAutogenModal, setShowAutogenModal] = useState(false);
   const [showChipExplainer, setShowChipExplainer] = useState(false);
   const [isChipConfigOpen, setIsChipConfigOpen] = useState(false);
-  const [calculatedChips, setCalculatedChips] = useState<ChipType[]>([]);
+  const [calculatedStartingChips, setCalculatedStartingChips] = useState<ChipType[]>([]);
   const colorScheme = useColorScheme() ?? 'light';
   const { startGame } = useGameContext();
 
   // --- HANDLERS ---
-  const handleChipEdited = () => {
-    setIsCustomizedChipSet(true);
-    if (chipSetType !== 'custom') setChipSetType('custom');
-  };
-  const handleChipQuantityChange = (id: string, quantity: number) => {
-    handleChipEdited();
-    setChips(chips.map(chip => chip.id === id ? { ...chip, quantity } : chip));
-  };
-  const handleChipValueChange = (id: string, value: number) => {
-    handleChipEdited();
-    setChips(chips.map(chip => chip.id === id ? { ...chip, value } : chip));
-  };
   const handleBuyInChange = (value: string) => {
     setBuyInAmount(value);
     const buyIn = parseFloat(value) || 0;
@@ -344,20 +328,18 @@ export default function SetupGameScreen() {
 
   // Calculate chip distribution when chip config is opened or when autogenerate is pressed
   const calculateChipSpread = useCallback((buyIn: number, bigBlind: number, playerCount: number) => {
-    if (!isCustomizedChipSet) {
-      const availableChips = defaultChips.map(chip => chip.quantity);
-      const solutions = findAllSolutions(buyIn, bigBlind, playerCount, availableChips);
-      const bestSolution = findBestSolution(solutions);
-      if (bestSolution) {
-        const updatedChips = defaultChips.map((chip, index) => ({
-          ...chip,
-          value: bestSolution.chipValues[index] || 0,
-          quantity: bestSolution.distribution[index] || 0
-        }));
-        setCalculatedChips(updatedChips);
-      }
+    const availableChips = defaultChips.map(chip => chip.quantity);
+    const solutions = findAllSolutions(buyIn, bigBlind, playerCount, availableChips);
+    const bestSolution = findBestSolution(solutions);
+    if (bestSolution) {
+      const updatedChips = defaultChips.map((chip, index) => ({
+        ...chip,
+        value: bestSolution.chipValues[index] || 0,
+        quantity: bestSolution.distribution[index] || 0
+      }));
+      setCalculatedStartingChips(updatedChips);
     }
-  }, [isCustomizedChipSet]);
+  }, []);
 
   // Calculate distribution when chip config is opened
   useEffect(() => {
@@ -439,9 +421,9 @@ export default function SetupGameScreen() {
             </View>
             <View style={chipConfigurationStyles.chipList}>
               {isCustomizedChipSet ? chips.map(chip => (
-                <ChipConfigItem key={chip.id} chip={chip} onQuantityChange={handleChipQuantityChange} onValueChange={handleChipValueChange} />
-              )) : calculatedChips.map(chip => (
-                <ChipConfigItem key={chip.id} chip={chip} onQuantityChange={handleChipQuantityChange} onValueChange={handleChipValueChange} />
+                <ChipConfigItem key={chip.id} chip={chip} />
+              )) : calculatedStartingChips.map(chip => (
+                <ChipConfigItem key={chip.id} chip={chip} />
               ))}
             </View>
           </Collapsible>
