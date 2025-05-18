@@ -33,11 +33,11 @@ type ChipType = {
 };
 
 const defaultChips: ChipType[] = [
-  { id: 'white', color: '#FFFFFF', displayName: 'White', value: 1, quantity: 100 },
-  { id: 'red', color: '#E53935', displayName: 'Red', value: 5, quantity: 50 },
-  { id: 'blue', color: '#1E88E5', displayName: 'Blue', value: 10, quantity: 50 },
-  { id: 'green', color: '#43A047', displayName: 'Green', value: 25, quantity: 50 },
-  { id: 'black', color: '#212121', displayName: 'Black', value: 100, quantity: 50 },
+  { id: 'white', color: '#FFFFFF', displayName: 'White', value: 1, quantity: 0 },
+  { id: 'red', color: '#E53935', displayName: 'Red', value: 5, quantity: 0 },
+  { id: 'blue', color: '#1E88E5', displayName: 'Blue', value: 10, quantity: 0 },
+  { id: 'green', color: '#43A047', displayName: 'Green', value: 25, quantity: 0 },
+  { id: 'black', color: '#212121', displayName: 'Black', value: 100, quantity: 0 },
 ];
 
 // Custom themed input component
@@ -192,30 +192,48 @@ function PlayerTagInput({
 }
 
 // --- CHIP SET SELECTOR COMPONENT ---
-function ChipSetSelector({ selectedSet, onSetChange }: { selectedSet: string; onSetChange: (setId: string) => void }) {
+function ChipSetSelector({ selectedSet, onSetChange }: { selectedSet: { id: string; chips: { color: string; quantity: number }[]; }; onSetChange: (setId: string, chips: { color: string; quantity: number }[]) => void }) {
   // Simple select: 3 options, highlight selected, call onSetChange
   const options = [
-    { label: '300pc Standard Set', value: '300pc' },
-    { label: '500pc Standard Set', value: '500pc' },
-    { label: '100pc Standard Set', value: '100pc' },
+    { label: '300pc Standard Set', value: '300pc', chips: [
+      { color: 'white', quantity: 100 },
+      { color: 'red', quantity: 50 },
+      { color: 'blue', quantity: 50 },
+      { color: 'green', quantity: 50 },
+      { color: 'black', quantity: 50 }
+    ] },
+    { label: '500pc Standard Set', value: '500pc', chips: [
+      { color: 'white', quantity: 150 },
+      { color: 'red', quantity: 150 },
+      { color: 'blue', quantity: 100 },
+      { color: 'green', quantity: 50 },
+      { color: 'black', quantity: 50 }
+    ] },
+    { label: '100pc Standard Set', value: '100pc', chips: [
+      { color: 'white', quantity: 20 },
+      { color: 'red', quantity: 20 },
+      { color: 'blue', quantity: 20 },
+      { color: 'green', quantity: 20 },
+      { color: 'black', quantity: 20 }
+    ] }
   ];
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 8, gap: 8 }}>
       {options.map(opt => (
         <TouchableOpacity
           key={opt.value}
-          onPress={() => onSetChange(opt.value)}
+          onPress={() => onSetChange(opt.value, opt.chips)}
           style={{
             flex: 1,
             padding: 10,
             borderRadius: 8,
             borderWidth: 1,
-            borderColor: opt.value === selectedSet ? '#007AFF' : '#ccc',
-            backgroundColor: opt.value === selectedSet ? '#e6f0ff' : '#fff',
+            borderColor: opt.value === selectedSet.id ? '#007AFF' : '#ccc',
+            backgroundColor: opt.value === selectedSet.id ? '#e6f0ff' : '#fff',
             alignItems: 'center',
           }}
         >
-          <ThemedText style={{ color: opt.value === selectedSet ? '#007AFF' : '#333' }}>{opt.label}</ThemedText>
+          <ThemedText style={{ color: opt.value === selectedSet.id ? '#007AFF' : '#333' }}>{opt.label}</ThemedText>
         </TouchableOpacity>
       ))}
     </View>
@@ -238,9 +256,9 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
   visible: boolean;
   onClose: () => void;
   bigBlindAmount: string;
-  chipSetType: string;
+  chipSetType: { id: string; chips: { color: string; quantity: number; }[]; };
   onBigBlindChange: (val: string) => void;
-  onChipSetChange: (val: string) => void;
+  onChipSetChange: (id: string, chips: { color: string; quantity: number; }[]) => void;
   buyInAmount: string;
   onAutogenerate: () => void;
 }) {
@@ -271,7 +289,7 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
 
           <View style={chipConfigurationStyles.chipSetContainer}>
             <ThemedText style={chipConfigurationStyles.chipConfigLabel}>Available Chips</ThemedText>
-            <ChipSetSelector selectedSet={chipSetType} onSetChange={onChipSetChange} />
+            <ChipSetSelector selectedSet={chipSetType} onSetChange={(id, chips) => onChipSetChange(id, chips)} />
           </View>
           <View style={chipConfigurationStyles.modalActionsRow}>
             <ThemedButton title="Get Chip Spread" onPress={onAutogenerate} type="primary" />
@@ -285,9 +303,17 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
 export default function SetupGameScreen() {
   const [players, setPlayers] = useState<string[]>([]);
   const [buyInAmount, setBuyInAmount] = useState('20');
-  const [chips, setChips] = useState<ChipType[]>(defaultChips);
+  const [chipSetType, setChipSetType] = useState({
+    id: '300pc',
+    chips: [
+      { color: 'white', quantity: 100 },
+      { color: 'red', quantity: 50 },
+      { color: 'blue', quantity: 50 },
+      { color: 'green', quantity: 50 },
+      { color: 'black', quantity: 50 }
+    ]
+  });
   const [bigBlindAmount, setBigBlindAmount] = useState('1');
-  const [chipSetType, setChipSetType] = useState('300pc');
   const [isCustomizedChipSet, setIsCustomizedChipSet] = useState(false);
   const [showAutogenModal, setShowAutogenModal] = useState(false);
   const [showChipExplainer, setShowChipExplainer] = useState(false);
@@ -327,8 +353,8 @@ export default function SetupGameScreen() {
   };
 
   // Calculate chip distribution when chip config is opened or when autogenerate is pressed
-  const calculateChipSpread = useCallback((buyIn: number, bigBlind: number, playerCount: number) => {
-    const availableChips = defaultChips.map(chip => chip.quantity);
+  const calculateChipSpread = useCallback((buyIn: number, bigBlind: number, playerCount: number, chipSetType: { chips: { color: string; quantity: number }[] }) => {
+    const availableChips = chipSetType.chips.map(chip => chip.quantity);
     const solutions = findAllSolutions(buyIn, bigBlind, playerCount, availableChips);
     const bestSolution = findBestSolution(solutions);
     if (bestSolution) {
@@ -346,15 +372,15 @@ export default function SetupGameScreen() {
     if (isChipConfigOpen) {
       const buyIn = parseFloat(buyInAmount);
       const bigBlind = parseFloat(bigBlindAmount);
-      calculateChipSpread(buyIn, bigBlind, players.length);
+      calculateChipSpread(buyIn, bigBlind, players.length, chipSetType);
     }
-  }, [isChipConfigOpen, buyInAmount, bigBlindAmount, players.length, calculateChipSpread]);
+  }, [isChipConfigOpen, buyInAmount, bigBlindAmount, players.length, chipSetType, calculateChipSpread]);
 
   // Calculate distribution when autogenerate is pressed
   const handleAutogenerate = () => {
     const buyIn = parseFloat(buyInAmount);
     const bigBlind = parseFloat(bigBlindAmount);
-    calculateChipSpread(buyIn, bigBlind, players.length);
+    calculateChipSpread(buyIn, bigBlind, players.length, chipSetType);
     setShowAutogenModal(false);
   };
 
@@ -383,7 +409,7 @@ export default function SetupGameScreen() {
           {/* Chip Configuration with heading, summary, and edit */}
           <Collapsible title={
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <ThemedText style={[styles.sectionHeader, { paddingLeft: 0, paddingTop: 7 }]}>Chip Configuration
+              <ThemedText style={[styles.sectionHeader, { paddingLeft: 0, paddingTop: 7 }]}>Starting Chip Configuration
               <TouchableOpacity
                 onPress={() => setShowChipExplainer(true)}
                 style={{ marginLeft: 4 }}
@@ -394,23 +420,11 @@ export default function SetupGameScreen() {
             </View>
           } onOpen={() => setIsChipConfigOpen(true)} onClose={() => setIsChipConfigOpen(false)}>
             <View style={chipConfigurationStyles.chipConfigHeader}>
-              {!isCustomizedChipSet ? (
-                <>
                   <ThemedText style={chipConfigurationStyles.chipConfigSummaryText}>
-                    Assuming a big blind of ${bigBlindAmount} and a {chipSetType} standard chip set. <TouchableOpacity onPress={() => setShowAutogenModal(true)} style={chipConfigurationStyles.chipConfigEditBtn}>
+                    Assuming a big blind of ${bigBlindAmount} and a {chipSetType.id} standard chip set. <TouchableOpacity onPress={() => setShowAutogenModal(true)} style={chipConfigurationStyles.chipConfigEditBtn}>
                     <Ionicons name="create-outline" size={18} color={Colors[colorScheme].tint} />
                   </TouchableOpacity>
                   </ThemedText>
-                </>
-              ) : (
-                <ThemedText style={chipConfigurationStyles.chipConfigSummaryText}>
-                <TouchableOpacity onPress={() => setShowAutogenModal(true)} style={chipConfigurationStyles.chipConfigEditBtn}>
-                  <Ionicons name="create-outline" size={18} color={Colors[colorScheme].tint} />
-                  <ThemedText style={chipConfigurationStyles.chipConfigEditText}>autogenerate config</ThemedText>
-                </TouchableOpacity>
-              </ThemedText>
-
-              )}
             </View>
 
             <View style={chipConfigurationStyles.chipHeaderRow}>
@@ -420,10 +434,8 @@ export default function SetupGameScreen() {
               <ThemedText style={chipConfigurationStyles.chipHeaderQuantity}>Quantity</ThemedText>
             </View>
             <View style={chipConfigurationStyles.chipList}>
-              {isCustomizedChipSet ? chips.map(chip => (
-                <ChipConfigItem key={chip.id} chip={chip} />
-              )) : calculatedStartingChips.map(chip => (
-                <ChipConfigItem key={chip.id} chip={chip} />
+              {calculatedStartingChips.map(chip => (
+                <ChipConfigItem key={chip.color} chip={chip} />
               ))}
             </View>
           </Collapsible>
@@ -436,7 +448,7 @@ export default function SetupGameScreen() {
           bigBlindAmount={bigBlindAmount}
           chipSetType={chipSetType}
           onBigBlindChange={val => { setBigBlindAmount(val); }}
-          onChipSetChange={setChipSetType}
+          onChipSetChange={(id, chips) => { setChipSetType({ id, chips }); setIsCustomizedChipSet(false); }}
           buyInAmount={buyInAmount}
           onAutogenerate={handleAutogenerate}
         />
@@ -445,10 +457,7 @@ export default function SetupGameScreen() {
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0008' }}>
             <View style={{ backgroundColor: Colors[colorScheme].background, padding: 24, borderRadius: 12, maxWidth: 320 }}>
               <ThemedText style={[styles.subLabel, { marginBottom: 16 }]}>
-                Optionally, set up the value and amount of chips per player. The chip wizard can help you find a reasonable configuration based on buy-in, amount of chips, and amount of players!
-              </ThemedText>
-              <ThemedText style={[styles.subLabel, { marginBottom: 16 }]}>
-                Also, by setting the chip configuration you can settle up at the end with just raw chip counts instead of calculating dollar amounts.
+                The chip setup wizard can help you find a reasonable starting pile based on buy-in, amount of chips, and amount of players!
               </ThemedText>
               <ThemedButton title="Close" onPress={() => setShowChipExplainer(false)} />
             </View>
