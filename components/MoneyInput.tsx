@@ -20,7 +20,7 @@ interface MoneyInputProps {
 export function MoneyInput({
   value,
   onChangeText,
-  placeholder = 'Enter amount',
+  placeholder = '0',
   autoFocus = false,
   clearButtonMode = 'while-editing',
   selectTextOnFocus = true,
@@ -54,6 +54,12 @@ export function MoneyInput({
 
   // Handle text change with formatting and decimals
   const handleTextChange = (text: string) => {
+    // If input is just a period, prepend a 0
+    if (text === '.') {
+      onChangeText('0.');
+      return;
+    }
+
     // Remove all except digits and decimal
     let numericValue = text.replace(/[^0-9.]/g, '');
     // Only allow one decimal point
