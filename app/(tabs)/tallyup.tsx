@@ -387,7 +387,7 @@ export default function TallyUpScreen() {
 
   return (
       <ThemedView style={styles.container}>
-        <Stack.Screen options={{ headerShown: true, headerTitleAlign: 'center', headerTitle: 'Tally Up Results', headerBackButtonMenuEnabled: true, headerLeft: () => <TouchableOpacity onPress={() => router.navigate('/(tabs)/game')}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={useThemeColor({}, 'text')} /></TouchableOpacity> }} />
+        <Stack.Screen options={{ headerShown: true, headerTitleAlign: 'center', headerTitle: 'Tally Up Results', headerBackButtonMenuEnabled: true, headerLeft: () => <TouchableOpacity onPress={() => router.navigate('/(tabs)/inprogress')}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={useThemeColor({}, 'text')} /></TouchableOpacity> }} />
 
         {allPlayersHaveEntered && !isBalanced && (
           <View style={styles.errorBanner}>

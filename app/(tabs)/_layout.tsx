@@ -34,25 +34,22 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="game"
+        name="inprogress"
         options={{
-          title: 'Game',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gamecontroller.fill" color={color} />,
-        }}
+          href: null
+      }}
       />
       <Tabs.Screen
         name="tallyup"
         options={{
-          title: 'Tally Up',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.clipboard.fill" color={color} />,
-        }}
+          href: null
+      }}
       />
       <Tabs.Screen
         name="settle"
         options={{
-          title: "Settle",
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="arrow.up.arrow.down" color={color} />,
-        }}
+          href: null
+      }}
       />
       <Tabs.Screen
         name="history"

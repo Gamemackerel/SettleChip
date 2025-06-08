@@ -209,7 +209,7 @@ export default function GameScreen() {
       return;
     }
     finishGame();
-    router.navigate("/(tabs)/tallyup");
+    router.navigate("/tallyup");
   };
 
   // Display initial buy-in amount at the top

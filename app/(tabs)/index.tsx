@@ -349,7 +349,7 @@ export default function SetupGameScreen() {
       return;
     }
     startGame(players, buyInValue);
-    router.push('/game');
+    router.push('/inprogress');
   };
 
   // Calculate chip distribution when chip config is opened or when autogenerate is pressed
