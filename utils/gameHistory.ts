@@ -30,7 +30,6 @@ async function getDb() {
 
 // Call this once at app startup
 export async function setupDatabase() {
-  console.log('Setting up database...');
   const db = await getDb();
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS Games (

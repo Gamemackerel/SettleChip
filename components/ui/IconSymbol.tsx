@@ -16,6 +16,7 @@ const MAPPING = {
   'clock.fill': 'history',
   'person.fill': 'person',
   'sparkles': 'auto-awesome',
+  'suit.spade.fill': 'casino',
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],

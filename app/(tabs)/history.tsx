@@ -23,7 +23,6 @@ const HistoryScreen = () => {
       const fetchHistory = async () => {
         try {
           const h = await getGameHistory();
-          console.log('[HistoryScreen] Loaded history:', h);
           setHistory(h);
         } catch (err) {
           console.error('[HistoryScreen] Error loading history:', err);

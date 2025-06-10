@@ -331,8 +331,6 @@ export function findAllSolutions(buyIn: number, bigBlind: number, playerCount: n
   }
   console.log(`Generated ${allSolutions.length} valid solutions`);
 
-  // console.log(allSolutions[0]);
-
   return allSolutions;
 }
 

@@ -22,9 +22,10 @@ export default function TabTwoScreen() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">About</ThemedText>
       </ThemedView>
-      <ThemedText>Chip Split is a simple app to help you play poker when you're too drunk to do the math of how much each player owes.</ThemedText>
-      <ThemedText>Contact the developer at: </ThemedText>
-      <ThemedText type="link">abraham.r.m@gmail.com</ThemedText>
+      <ThemedText>Chipsplit helps setup your poker game by finding a feasible initial chip distribution, and then settle up debts after, and track game results over time.</ThemedText>
+      <ThemedText>- The initial chip distribution service uses linear Diophantine equation solver to find feasible distributions.</ThemedText>
+      <ThemedText>- The optimal settlement service uses a greedy approximation to minimize number of transfers.</ThemedText>
+      <ThemedText>Contact: abraham.r.m@gmail.com</ThemedText>
     </ParallaxScrollView>
   );
 }

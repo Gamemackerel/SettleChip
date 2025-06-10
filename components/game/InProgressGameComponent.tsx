@@ -183,9 +183,11 @@ const PlayerActionModal = ({
 };
 
 export default function GameScreen() {
-  const { gameState, addFunds, finishGame } = useGameContext();
+  const { gameState, addFunds, finishGame, goToPreviousPhase } = useGameContext();
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; buyIn: number } | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+
+  const textThemeColor = useThemeColor({}, 'text');
 
   const handlePlayerPress = (player: { id: string; name: string; buyIn: number }) => {
     setSelectedPlayer(player);
@@ -209,7 +211,7 @@ export default function GameScreen() {
       return;
     }
     finishGame();
-    router.navigate("/tallyup");
+    // finishGame sets the phase, which triggers the next screen
   };
 
   // Display initial buy-in amount at the top
@@ -227,7 +229,7 @@ export default function GameScreen() {
 
   return (
       <ThemedView style={styles.container}>
-        <Stack.Screen options={{ headerShown: true, headerTitleAlign: 'center', headerTitle: 'Game in Progress', headerLeft: () => <TouchableOpacity onPress={() => router.navigate('/(tabs)')}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={useThemeColor({}, 'text')} /></TouchableOpacity> }} />
+        <Stack.Screen options={{ headerShown: true, headerTitleAlign: 'center', headerTitle: 'Game in Progress', headerLeft: () => <TouchableOpacity onPress={() => goToPreviousPhase()}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={textThemeColor} /></TouchableOpacity> }} />
 
         {renderBuyInInfo()}
 

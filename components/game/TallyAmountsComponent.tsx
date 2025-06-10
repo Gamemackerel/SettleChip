@@ -334,7 +334,9 @@ export default function TallyUpScreen() {
     areAllPlayersComplete,
     getPlayerProfit,
     getTotalBuyIn,
-    getTotalCashOut
+    getTotalCashOut,
+    goToNextPhase,
+    goToPreviousPhase
   } = useGameContext();
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -370,16 +372,15 @@ export default function TallyUpScreen() {
       date: new Date().toISOString(),
       players,
     };
-    console.log('[SettleUp] Saving entry:', entry);
     try {
       await saveGameToHistory(entry);
-      console.log('[SettleUp] Entry saved successfully');
     } catch (err) {
       console.error('[SettleUp] Error saving entry:', err);
     }
-    router.navigate("/(tabs)/settle");
+    goToNextPhase();
   };
 
+  const textColor = useThemeColor({}, 'text');
   const totalBuyIn = getTotalBuyIn();
   const totalCashOut = getTotalCashOut();
   const isBalanced = Math.abs(totalBuyIn - totalCashOut) < 0.01;
@@ -387,7 +388,7 @@ export default function TallyUpScreen() {
 
   return (
       <ThemedView style={styles.container}>
-        <Stack.Screen options={{ headerShown: true, headerTitleAlign: 'center', headerTitle: 'Tally Up Results', headerBackButtonMenuEnabled: true, headerLeft: () => <TouchableOpacity onPress={() => router.navigate('/(tabs)/inprogress')}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={useThemeColor({}, 'text')} /></TouchableOpacity> }} />
+        <Stack.Screen options={{ headerShown: true, headerTitleAlign: 'center', headerTitle: 'Tally Up Results', headerBackButtonMenuEnabled: true, headerLeft: () => <TouchableOpacity onPress={() => goToPreviousPhase()}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={textColor} /></TouchableOpacity> }} />
 
         {allPlayersHaveEntered && !isBalanced && (
           <View style={styles.errorBanner}>

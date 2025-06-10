@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+// Define game phases
+export type GamePhase = 'setup' | 'inprogress' | 'tallyup' | 'settle';
+
 // Define player type
 export type Player = {
   id: string;
@@ -16,6 +19,7 @@ type GameState = {
   buyInAmount: number;
   isGameFinished: boolean;
   isTallyBalanced: boolean;
+  gamePhase: GamePhase;
 };
 
 // Define context type
@@ -34,6 +38,10 @@ type GameContextType = {
   getTotalBuyIn: () => number;
   getTotalCashOut: () => number;
   validateTallyBalance: () => boolean;
+  setGamePhase: (phase: GamePhase) => void;
+  goToNextPhase: () => void;
+  goToPreviousPhase: () => void;
+  resetGame: () => void;
 };
 
 // Create context
@@ -46,6 +54,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     buyInAmount: 20,
     isGameFinished: false,
     isTallyBalanced: true,
+    gamePhase: 'setup',
   });
 
   const setPlayers = (players: Player[]) => {
@@ -87,24 +96,29 @@ export function GameProvider({ children }: { children: ReactNode }) {
   };
 
   const startGame = (playerNames: string[], buyInAmount: number) => {
+    console.log('Starting game with players:', playerNames);
     const players = playerNames.map(name => ({
       id: Date.now() + Math.random().toString(),
       name,
       buyIn: buyInAmount,
     }));
-
-    setGameState({
+    console.log('Generated players:', players);
+    console.log('setting game state');
+    setGameState(prev => ({
+      ...prev,
       players,
       buyInAmount,
       isGameFinished: false,
       isTallyBalanced: true,
-    });
+      gamePhase: 'inprogress',
+    }));
   };
 
   const finishGame = () => {
     setGameState(prev => ({
       ...prev,
       isGameFinished: true,
+      gamePhase: 'tallyup',
       players: prev.players.map(player => ({
         ...player,
         isComplete: false,
@@ -187,6 +201,69 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return player.finalAmount - player.buyIn;
   };
 
+  // New phase management methods
+  const setGamePhase = (phase: GamePhase) => {
+    setGameState(prev => ({ ...prev, gamePhase: phase }));
+  };
+
+  const goToNextPhase = () => {
+    setGameState(prev => {
+      let nextPhase: GamePhase = prev.gamePhase;
+
+      switch (prev.gamePhase) {
+        case 'setup':
+          nextPhase = 'inprogress';
+          break;
+        case 'inprogress':
+          nextPhase = 'tallyup';
+          break;
+        case 'tallyup':
+          nextPhase = 'settle';
+          break;
+        case 'settle':
+          // Stay at settle or could reset to setup
+          nextPhase = 'settle';
+          break;
+      }
+
+      return { ...prev, gamePhase: nextPhase };
+    });
+  };
+
+  const goToPreviousPhase = () => {
+    setGameState(prev => {
+      let previousPhase: GamePhase = prev.gamePhase;
+
+      switch (prev.gamePhase) {
+        case 'inprogress':
+          previousPhase = 'setup';
+          break;
+        case 'tallyup':
+          previousPhase = 'inprogress';
+          break;
+        case 'settle':
+          previousPhase = 'tallyup';
+          break;
+        case 'setup':
+          // Stay at setup
+          previousPhase = 'setup';
+          break;
+      }
+
+      return { ...prev, gamePhase: previousPhase };
+    });
+  };
+
+  const resetGame = () => {
+    setGameState({
+      players: [],
+      buyInAmount: 20,
+      isGameFinished: false,
+      isTallyBalanced: true,
+      gamePhase: 'setup',
+    });
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -204,6 +281,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         getTotalBuyIn,
         getTotalCashOut,
         validateTallyBalance,
+        setGamePhase,
+        goToNextPhase,
+        goToPreviousPhase,
+        resetGame,
       }}
     >
       {children}

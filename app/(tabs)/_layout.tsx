@@ -9,7 +9,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = 'light';
 
   return (
     <Tabs
@@ -29,27 +29,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Setup',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Game",
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="suit.spade.fill" color={color} />,
         }}
-      />
-      <Tabs.Screen
-        name="inprogress"
-        options={{
-          href: null
-      }}
-      />
-      <Tabs.Screen
-        name="tallyup"
-        options={{
-          href: null
-      }}
-      />
-      <Tabs.Screen
-        name="settle"
-        options={{
-          href: null
-      }}
       />
       <Tabs.Screen
         name="history"

@@ -55,7 +55,7 @@ const TransactionCard = ({ transaction }: { transaction: Transaction }) => {
 };
 
 export default function SettleUpScreen() {
-  const { gameState } = useGameContext();
+  const { gameState, goToPreviousPhase, goToNextPhase, resetGame } = useGameContext();
   const [useWriteOffThreshold, setUseWriteOffThreshold] = useState(false);
   const [writeOffThreshold, setWriteOffThreshold] = useState(0);
   const colorScheme = useColorScheme();
@@ -95,7 +95,7 @@ export default function SettleUpScreen() {
   const totalWriteOff = settlementResult.totalWriteOff;
 
   const handleNewGame = () => {
-    router.navigate("/(tabs)");
+    resetGame();
   };
 
   const toggleWriteOffThreshold = () => {
@@ -104,7 +104,7 @@ export default function SettleUpScreen() {
 
   return (
       <ThemedView style={styles.container}>
-        <Stack.Screen options={{ headerShown: true,headerTitleAlign: 'center', headerTitle: 'Settle Up', headerLeft: () => <TouchableOpacity onPress={() => router.navigate("/(tabs)/tallyup")}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={useThemeColor({}, 'text')} /></TouchableOpacity> }} />
+        <Stack.Screen options={{ headerShown: true,headerTitleAlign: 'center', headerTitle: 'Settle Up', headerLeft: () => <TouchableOpacity onPress={() => goToPreviousPhase()}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={textColor} /></TouchableOpacity> }} />
 
         <ScrollView
           style={styles.scrollView}
@@ -118,7 +118,7 @@ export default function SettleUpScreen() {
               </ThemedText>
               <ThemedButton
                 title="Return to Tally"
-                onPress={() => router.navigate("/(tabs)/tallyup")}
+                onPress={() => goToNextPhase()}
                 type="secondary"
               />
             </View>
