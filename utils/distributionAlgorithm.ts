@@ -40,10 +40,10 @@ type FormattedSolution = {
 
 
 // Constants for our constraints
-const MIN_CHIPS_PER_PLAYER = 15;
+const MIN_CHIPS_PER_PLAYER = 7;
 const MAX_CHIPS_PER_PLAYER = 35;
 const PREFERRED_TOTAL_CHIPS = 25;
-const MIN_SMALL_BLIND_RATIO = 0.4; // 40% of chips should be small blind chips
+const MIN_SMALL_BLIND_RATIO = 0.1; // 20% of chips should be small blind chips
 
 // Possible multipliers
 const possibleMultipliers = [2, 4, 5];
@@ -82,15 +82,15 @@ function findChipDistributions(multiplierData: MultiplierData, buyIn: number, sm
   for (let totalChips = MIN_CHIPS_PER_PLAYER; totalChips <= MAX_CHIPS_PER_PLAYER; totalChips++) {
     // Try different distributions of the smallest chip
     for (let x1 = Math.ceil(totalChips * MIN_SMALL_BLIND_RATIO); x1 <= totalChips; x1++) {
-      // Maximum possible x2 to ensure x1 > x2
-      const maxX2 = x1 - 1;
+      // Maximum possible x2 to ensure x1 >= x2
+      const maxX2 = x1;
 
       if (maxX2 <= 0) continue; // Skip if we can't satisfy x1 > x2
 
       // Try different values for x2
       for (let x2 = 1; x2 <= maxX2; x2++) {
-        // Maximum possible x3 to ensure x2 > x3
-        const maxX3 = x2 - 1;
+        // Maximum possible x3 to ensure x2 >= x3
+        const maxX3 = x2;
 
         // Calculate remaining chips and value
         const usedChips = x1 + x2;
@@ -133,8 +133,8 @@ function findChipDistributions(multiplierData: MultiplierData, buyIn: number, sm
         // Try different values for x3
         for (let x3 = 0; x3 <= maxX3; x3++) {
           if (x3 > 0) {
-            // Maximum possible x4 to ensure x3 > x4
-            const maxX4 = x3 - 1;
+            // Maximum possible x4 to ensure x3 >= x4
+            const maxX4 = x3;
 
             // Calculate remaining chips and value with x3
             const usedChipsWithX3 = usedChips + x3;
@@ -177,8 +177,8 @@ function findChipDistributions(multiplierData: MultiplierData, buyIn: number, sm
             // Try different values for x4
             for (let x4 = 0; x4 <= maxX4; x4++) {
               if (x4 > 0) {
-                // Maximum possible x5 to ensure x4 > x5
-                const maxX5 = x4 - 1;
+                // Maximum possible x5 to ensure x4 >= x5
+                const maxX5 = x4;
 
                 // Calculate remaining chips and value with x4
                 const usedChipsWithX4 = usedChipsWithX3 + x4;
@@ -340,14 +340,14 @@ function isRoundNumber(num: number) {
 
   // Handle scientific notation (e.g., "1e+2", "5e-1")
   if (str.includes('e')) {
-    return /^[15](\.0+)?e[+-]?\d+$/.test(str);
+    return /^[152](\.0+)?e[+-]?\d+$/.test(str);
   }
 
   // Remove decimal point and leading zeros, check pattern
   const digits = str.replace('.', '').replace(/^0+/, '');
 
-  // Should be 1 or 5 followed by any number of zeros
-  return /^[15]0*$/.test(digits);
+  // Should be 1, 2, or 5 followed by any number of zeros
+  return /^[152]0*$/.test(digits);
 }
 
 function countRoundNumbers(chipValues: number[]) {

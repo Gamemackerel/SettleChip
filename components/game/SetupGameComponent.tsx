@@ -365,6 +365,14 @@ export default function SetupGameScreen() {
         quantity: bestSolution.distribution[index] || 0
       }));
       setCalculatedStartingChips(updatedChips);
+    } else {
+      // Handle case when no solution is found by setting all chip quantities and value to 0
+      const updatedChips = defaultChips.map(chip => ({
+        ...chip,
+        value: 0,
+        quantity: 0
+      }));
+      setCalculatedStartingChips(updatedChips);
     }
   }, []);
 
