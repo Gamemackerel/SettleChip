@@ -66,8 +66,8 @@ export default function SettleUpScreen() {
 
   // Determine the write-off threshold based on chip values (less than 2 red chips)
   useEffect(() => {
-    // Default to 5 for now TODO: get this from your chip configuration
-    setWriteOffThreshold(5);
+    // Default to 1 for now TODO: get this from your chip configuration
+    setWriteOffThreshold(1);
   }, []);
 
   // Calculate optimal transactions to settle debts using the new algorithm
