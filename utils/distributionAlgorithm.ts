@@ -334,6 +334,26 @@ export function findAllSolutions(buyIn: number, bigBlind: number, playerCount: n
   return allSolutions;
 }
 
+
+function isRoundNumber(num: number) {
+  const str = num.toString();
+
+  // Handle scientific notation (e.g., "1e+2", "5e-1")
+  if (str.includes('e')) {
+    return /^[15](\.0+)?e[+-]?\d+$/.test(str);
+  }
+
+  // Remove decimal point and leading zeros, check pattern
+  const digits = str.replace('.', '').replace(/^0+/, '');
+
+  // Should be 1 or 5 followed by any number of zeros
+  return /^[15]0*$/.test(digits);
+}
+
+function countRoundNumbers(chipValues: number[]) {
+  return chipValues.filter(isRoundNumber).length;
+}
+
 // Function to find the best solution for a given scenario
 export function findBestSolution(solutions: Solution[]) {
   if (solutions.length === 0) {
@@ -343,9 +363,26 @@ export function findBestSolution(solutions: Solution[]) {
   // Sort by distance to preferred chip count
   solutions.sort((a, b) => Math.abs(a.totalChips - PREFERRED_TOTAL_CHIPS) - Math.abs(b.totalChips - PREFERRED_TOTAL_CHIPS));
 
-  // First try to find solutions with exactly 25 chips and 3 colors
+  // Sort by chip value roundness
+  solutions.sort((a, b) => {
+    const countA = countRoundNumbers(a.chipValues);
+    const countB = countRoundNumbers(b.chipValues);
+    return countB - countA;
+  });
+
+  // First try to find solutions with 20-30 chips and 2 colors
+  const twoColorSolutions = solutions.filter(sol =>
+    Math.abs(sol.totalChips - PREFERRED_TOTAL_CHIPS) <= 5 &&
+    sol.distribution.filter(c => c > 0).length <= 2
+  );
+
+  if (twoColorSolutions.length > 0) {
+    return twoColorSolutions[0];
+  }
+
+    // First try to find solutions with exactly 20-30 chips and 3 colors
   const threeColorSolutions = solutions.filter(sol =>
-    sol.totalChips === PREFERRED_TOTAL_CHIPS &&
+    Math.abs(sol.totalChips - PREFERRED_TOTAL_CHIPS) <= 5 &&
     sol.distribution.filter(c => c > 0).length <= 3
   );
 
@@ -353,9 +390,9 @@ export function findBestSolution(solutions: Solution[]) {
     return threeColorSolutions[0];
   }
 
-  // If no 3-color solutions, try 4-color solutions with 25 chips
+  // If no 3-color solutions, try 4-color solutions with 20-30 chips
   const fourColorSolutions = solutions.filter(sol =>
-    sol.totalChips === PREFERRED_TOTAL_CHIPS &&
+    Math.abs(sol.totalChips - PREFERRED_TOTAL_CHIPS) <= 5 &&
     sol.distribution.filter(c => c > 0).length === 4
   );
 
@@ -363,16 +400,16 @@ export function findBestSolution(solutions: Solution[]) {
     return fourColorSolutions[0];
   }
 
-  // If no 4-color solutions, fall back to any solution with 25 chips
-  const twentyFiveChipSolutions = solutions.filter(sol =>
-    sol.totalChips === PREFERRED_TOTAL_CHIPS
+  // If no 4-color solutions, fall back to any solution with 20-30 chips
+  const decentSolutions = solutions.filter(sol =>
+    Math.abs(sol.totalChips - PREFERRED_TOTAL_CHIPS) <= 5
   );
 
-  if (twentyFiveChipSolutions.length > 0) {
-    return twentyFiveChipSolutions[0];
+  if (decentSolutions.length > 0) {
+    return decentSolutions[0];
   }
 
-  // If no 25-chip solutions, fall back to closest solution
+  // If no 25-chip solutions, fall back to next best solution
   return solutions[0];
 }
 
