@@ -442,6 +442,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingTop: 0,
   },
   header: {
     flexDirection: 'row',
@@ -462,6 +463,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   scrollView: {
+    paddingTop: 15,
     flex: 1,
   },
   scrollContent: {
@@ -634,8 +636,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   bottomButtonContainer: {
-    marginTop: 10,
+    marginTop: 0,
     marginBottom: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(150, 150, 150, 0.2)'
   },
   errorBanner: {
     flexDirection: 'row',

@@ -54,6 +54,7 @@ const HistoryScreen = () => {
       <ThemedView style={styles.container}>
         <Stack.Screen options={{ headerShown: true, headerTitle: 'Game History' }} />
         <FlatList
+          style={styles.entryList}
           data={history}
           keyExtractor={item => item.id}
           renderItem={({ item }) => {
@@ -184,6 +185,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingTop: 0,
+    paddingBottom: 0
+  },
+  entryList: {
+    paddingBottom: 15,
+    paddingTop: 15
   },
   title: {
     fontSize: 24,

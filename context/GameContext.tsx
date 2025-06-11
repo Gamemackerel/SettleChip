@@ -1,3 +1,4 @@
+import { ChipType } from '@/types/types';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // Define game phases
@@ -20,6 +21,7 @@ type GameState = {
   isGameFinished: boolean;
   isTallyBalanced: boolean;
   gamePhase: GamePhase;
+  chipValues: ChipType[] | null;
 };
 
 // Define context type
@@ -30,7 +32,7 @@ type GameContextType = {
   removePlayer: (id: string) => void;
   addFunds: (id: string, amount: number) => void;
   setBuyInAmount: (amount: number) => void;
-  startGame: (playerNames: string[], buyInAmount: number) => void;
+  startGame: (playerNames: string[], buyInAmount: number, chipValues: ChipType[]) => void;
   finishGame: () => void;
   updatePlayerFinalAmount: (id: string, amount: number) => void;
   areAllPlayersComplete: () => boolean;
@@ -55,6 +57,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     isGameFinished: false,
     isTallyBalanced: true,
     gamePhase: 'setup',
+    chipValues: null,
   });
 
   const setPlayers = (players: Player[]) => {
@@ -95,15 +98,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setGameState(prev => ({ ...prev, buyInAmount: amount }));
   };
 
-  const startGame = (playerNames: string[], buyInAmount: number) => {
-    console.log('Starting game with players:', playerNames);
+  const startGame = (playerNames: string[], buyInAmount: number, chipValues: ChipType[]) => {
     const players = playerNames.map(name => ({
       id: Date.now() + Math.random().toString(),
       name,
       buyIn: buyInAmount,
     }));
-    console.log('Generated players:', players);
-    console.log('setting game state');
     setGameState(prev => ({
       ...prev,
       players,
@@ -111,6 +111,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       isGameFinished: false,
       isTallyBalanced: true,
       gamePhase: 'inprogress',
+      chipValues,
     }));
   };
 
@@ -261,6 +262,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       isGameFinished: false,
       isTallyBalanced: true,
       gamePhase: 'setup',
+      chipValues: null,
     });
   };
 

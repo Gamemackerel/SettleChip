@@ -21,6 +21,8 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useGameContext } from '@/context/GameContext';
+import { chipConfigurationStyles } from '@/styles/styles';
+import { ChipType } from '@/types/types';
 
 // Player card component
 const PlayerCard = ({
@@ -138,15 +140,6 @@ const PlayerActionModal = ({
                   style={styles.actionButtonSpacing}
                   type="primary"
                 />
-
-                <ThemedButton
-                  title="Cash Out (Coming Soon)"
-                  type="secondary"
-                  disabled={true}
-                  onPress={() => {}}
-                  icon={<Ionicons name="cash-outline" size={24} color="#FFFFFF" />}
-                  style={styles.actionButtonSpacing}
-                />
               </>
             ) : (
               <View style={styles.addFundsContainer}>
@@ -182,6 +175,24 @@ const PlayerActionModal = ({
   );
 };
 
+
+function ChipConfigItem({
+  chip,
+}: {
+  chip: ChipType;
+}) {
+  const colorScheme = useColorScheme() ?? 'light';
+  const borderColor = Colors[colorScheme].icon;
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
+      <View style={[chipConfigurationStyles.chipColorCircle, { backgroundColor: chip.color, borderColor }]}>
+        <View style={[chipConfigurationStyles.chipColorCircleInner, { borderColor, backgroundColor: chip.id === 'black' && colorScheme === 'dark' ? '#444' : chip.color }]} />
+      </View>
+      <ThemedText>{chip.value.toString()}</ThemedText>
+    </View>
+  );
+}
+
 export default function GameScreen() {
   const { gameState, addFunds, finishGame, goToPreviousPhase } = useGameContext();
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; buyIn: number } | null>(null);
@@ -214,24 +225,28 @@ export default function GameScreen() {
     // finishGame sets the phase, which triggers the next screen
   };
 
-  // Display initial buy-in amount at the top
-  const renderBuyInInfo = () => {
-    if (gameState.buyInAmount > 0) {
-      return (
-        <View style={styles.buyInInfoContainer}>
-          <ThemedText style={styles.buyInInfoLabel}>Initial Buy-In:</ThemedText>
-          <ThemedText style={styles.buyInInfoAmount}>${gameState.buyInAmount}</ThemedText>
-        </View>
-      );
-    }
-    return null;
-  };
+  const calculatedStartingChips = gameState.chipValues;
+
 
   return (
       <ThemedView style={styles.container}>
         <Stack.Screen options={{ headerShown: true, headerTitleAlign: 'center', headerTitle: 'Game in Progress', headerLeft: () => <TouchableOpacity onPress={() => goToPreviousPhase()}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={textThemeColor} /></TouchableOpacity> }} />
 
-        {renderBuyInInfo()}
+        <View style={styles.buyInInfoContainer}>
+          <ThemedText style={styles.buyInInfoLabel}>Initial Buy-In:</ThemedText>
+          <ThemedText style={styles.buyInInfoAmount}>${gameState.buyInAmount}</ThemedText>
+        </View>
+
+        {calculatedStartingChips && calculatedStartingChips.length > 0 && (
+          <View style={styles.chipListContainer}>
+            <View style={[styles.horizontalChipList]}>
+
+              {calculatedStartingChips.map(chip => (
+                <ChipConfigItem key={chip.color} chip={chip} />
+              ))}
+            </View>
+          </View>
+        )}
 
         <ScrollView
           style={styles.scrollView}
@@ -299,10 +314,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
-    paddingBottom: 10,
+    marginBottom: 15
+  },
+  chipListContainer: {
+    paddingBottom: 15,
+    marginBottom: 0,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(150, 150, 150, 0.2)',
+    alignItems: 'center'
+  },
+  horizontalChipList: {
+    flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center',
   },
   buyInInfoLabel: {
     fontSize: 16,
@@ -314,6 +336,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   scrollView: {
+    paddingTop: 15,
+    paddingBottom: 15,
     flex: 1,
   },
   scrollContent: {
@@ -405,7 +429,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   bottomButtonContainer: {
-    marginTop: 10,
+    marginTop: 0,
     marginBottom: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(150, 150, 150, 0.2)'
   },
 });

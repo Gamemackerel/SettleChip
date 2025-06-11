@@ -67,6 +67,7 @@ const ProfilesScreen = () => {
       <ThemedView style={styles.container}>
         <Stack.Screen options={{ headerShown: true, headerTitle: 'Player Profiles' }} />
         <FlatList
+          style={styles.entryList}
           data={Object.values(players)}
           keyExtractor={item => item.name}
           renderItem={({ item }) => {
@@ -163,6 +164,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingTop: 0,
+    paddingBottom: 0
+  },
+  entryList: {
+    paddingBottom: 15,
+    paddingTop: 15
   },
   title: {
     fontSize: 24,

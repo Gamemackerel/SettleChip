@@ -27,7 +27,6 @@ export default function GameIndex() {
   }, [gameState.gamePhase]);
 
   const CurrentComponent = useMemo(() => {
-    console.log('[GameIndex] Current game phase:', gameState.gamePhase);
     switch (gameState.gamePhase) {
       case 'setup':
         return SetupGameComponent;
