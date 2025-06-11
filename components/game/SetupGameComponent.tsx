@@ -11,7 +11,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
+import { Stack } from 'expo-router';
+import { useGameNavigation } from '@/hooks/useGameNavigation';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedButton } from '@/components/ThemedButton';
@@ -294,6 +296,7 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
 }
 
 export default function SetupGameScreen() {
+  const { screenOptions } = useGameNavigation('Setup Game', null);
   const { startGame, gameState } = useGameContext();
   const existingPlayers = gameState.players.map(player => player.name) ?? [];
   const [players, setPlayers] = useState<string[]>(existingPlayers);
@@ -390,7 +393,7 @@ export default function SetupGameScreen() {
 
   return (
       <ThemedView style={styles.outerContainer}>
-        <Stack.Screen options={{ headerShown: true, headerTitle: 'Setup Game', headerTitleAlign: 'center' }} />
+        <Stack.Screen options={screenOptions} />
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Buy-In */}
           <View style={styles.buyInContainer}>

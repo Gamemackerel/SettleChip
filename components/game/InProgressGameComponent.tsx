@@ -3,15 +3,17 @@ import {
   StyleSheet,
   View,
   ScrollView,
-  TouchableOpacity,
-  Modal,
   Text,
   Alert,
   FlatList
 } from 'react-native';
+import { Card } from '@/components/ui/Card';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
+import { Stack } from 'expo-router';
+import { useGameNavigation } from '@/hooks/useGameNavigation';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -24,45 +26,6 @@ import { useGameContext } from '@/context/GameContext';
 import { chipConfigurationStyles } from '@/styles/styles';
 import { ChipType } from '@/types/types';
 
-// Player card component
-const PlayerCard = ({
-  player,
-  onPress
-}: {
-  player: { id: string; name: string; buyIn: number };
-  onPress: () => void;
-}) => {
-  const colorScheme = useColorScheme() ?? 'light';
-  const cardBackground = colorScheme === 'dark' ? '#333' : '#f5f5f5';
-  const borderColor = useThemeColor({}, 'icon');
-
-  return (
-    <TouchableOpacity
-      style={[
-        styles.playerCard,
-        {
-          backgroundColor: cardBackground,
-          borderColor
-        }
-      ]}
-      onPress={onPress}
-    >
-      <View style={styles.playerCardContent}>
-        <ThemedText style={styles.playerName}>{player.name}</ThemedText>
-        <ThemedText style={styles.playerBuyIn}>
-          ${player.buyIn.toLocaleString()}
-        </ThemedText>
-      </View>
-      <View style={styles.playerCardActions}>
-        <Ionicons
-          name="ellipsis-vertical"
-          size={24}
-          color={Colors[colorScheme].text}
-        />
-      </View>
-    </TouchableOpacity>
-  );
-};
 
 // Player action modal component
 const PlayerActionModal = ({
@@ -105,73 +68,51 @@ const PlayerActionModal = ({
   if (!player) return null;
 
   return (
-    <Modal
+    <BaseModal
       visible={visible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={handleClose}
+      onClose={handleClose}
+      title={player.name}
     >
-      <View style={styles.modalOverlay}>
-        <View style={[
-          styles.modalContent,
-          {
-            backgroundColor: modalBackground,
-            borderColor
-          }
-        ]}>
-          <View style={styles.modalHeader}>
-            <ThemedText style={styles.modalTitle}>{player.name}</ThemedText>
-            <TouchableOpacity onPress={handleClose}>
-              <Ionicons
-                name="close"
-                size={24}
-                color={Colors[colorScheme].text}
+      <View style={styles.modalBody}>
+        {!showAddFundsInput ? (
+          <>
+            <ThemedButton
+              title="Add Funds"
+              onPress={() => setShowAddFundsInput(true)}
+              icon={<Ionicons name="add-circle-outline" size={24} color="#FFFFFF" />}
+              style={styles.actionButtonSpacing}
+              type="primary"
+            />
+          </>
+        ) : (
+          <View style={styles.addFundsContainer}>
+            <ThemedText style={styles.addFundsTitle}>Add Funds</ThemedText>
+            <ThemedText style={styles.amountInputLabel}>Amount:</ThemedText>
+            <View style={styles.moneyInputContainer}>
+              <MoneyInput
+                value={amount}
+                onChangeText={setAmount}
+                autoFocus={true}
               />
-            </TouchableOpacity>
+            </View>
+            <View style={styles.buttonRow}>
+              <ThemedButton
+                title="Cancel"
+                type="outline"
+                onPress={() => setShowAddFundsInput(false)}
+                style={{ flex: 1, marginRight: 10 }}
+              />
+              <ThemedButton
+                title="Add"
+                onPress={handleAddFunds}
+                style={{ flex: 1 }}
+                type="primary"
+              />
+            </View>
           </View>
-
-          <View style={styles.modalBody}>
-            {!showAddFundsInput ? (
-              <>
-                <ThemedButton
-                  title="Add Funds"
-                  onPress={() => setShowAddFundsInput(true)}
-                  icon={<Ionicons name="add-circle-outline" size={24} color="#FFFFFF" />}
-                  style={styles.actionButtonSpacing}
-                  type="primary"
-                />
-              </>
-            ) : (
-              <View style={styles.addFundsContainer}>
-                <ThemedText style={styles.addFundsTitle}>Add Funds</ThemedText>
-                <ThemedText style={styles.amountInputLabel}>Amount:</ThemedText>
-                <View style={styles.moneyInputContainer}>
-                  <MoneyInput
-                    value={amount}
-                    onChangeText={setAmount}
-                    autoFocus={true}
-                  />
-                </View>
-                <View style={styles.buttonRow}>
-                  <ThemedButton
-                    title="Cancel"
-                    type="outline"
-                    onPress={() => setShowAddFundsInput(false)}
-                    style={{ flex: 1, marginRight: 10 }}
-                  />
-                  <ThemedButton
-                    title="Add"
-                    onPress={handleAddFunds}
-                    style={{ flex: 1 }}
-                    type="primary"
-                  />
-                </View>
-              </View>
-            )}
-          </View>
-        </View>
+        )}
       </View>
-    </Modal>
+    </BaseModal>
   );
 };
 
@@ -198,7 +139,9 @@ export default function GameScreen() {
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; buyIn: number } | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const { screenOptions } = useGameNavigation('Game in Progress', () => goToPreviousPhase());
   const textThemeColor = useThemeColor({}, 'text');
+  const colorScheme = useColorScheme() ?? 'light';
 
   const handlePlayerPress = (player: { id: string; name: string; buyIn: number }) => {
     setSelectedPlayer(player);
@@ -230,7 +173,7 @@ export default function GameScreen() {
 
   return (
       <ThemedView style={styles.container}>
-        <Stack.Screen options={{ headerShown: true, headerTitleAlign: 'center', headerTitle: 'Game in Progress', headerLeft: () => <TouchableOpacity onPress={() => goToPreviousPhase()}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={textThemeColor} /></TouchableOpacity> }} />
+        <Stack.Screen options={screenOptions} />
 
         <View style={styles.buyInInfoContainer}>
           <ThemedText style={styles.buyInInfoLabel}>Initial Buy-In:</ThemedText>
@@ -258,11 +201,24 @@ export default function GameScreen() {
             </ThemedText>
           ) : (
             gameState.players.map(player => (
-              <PlayerCard
+              <Card
                 key={player.id}
-                player={player}
                 onPress={() => handlePlayerPress(player)}
-              />
+              >
+                <View style={styles.playerCardContent}>
+                  <ThemedText style={styles.playerName}>{player.name}</ThemedText>
+                  <ThemedText style={styles.playerBuyIn}>
+                    ${player.buyIn.toLocaleString()}
+                  </ThemedText>
+                </View>
+                <View style={styles.playerCardActions}>
+                  <Ionicons
+                    name="ellipsis-vertical"
+                    size={24}
+                    color={Colors[colorScheme].text}
+                  />
+                </View>
+              </Card>
             ))
           )}
         </ScrollView>
@@ -297,10 +253,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 20,
-  },
-  backButton: {
-    paddingLeft: 20,
-    paddingRight: 20,
   },
   placeholder: {
     width: 34, // Same as backButton to center the title
@@ -348,18 +300,6 @@ const styles = StyleSheet.create({
     marginTop: 50,
     opacity: 0.7,
   },
-  playerCard: {
-    flexDirection: 'row',
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 15,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
   playerCardContent: {
     flex: 1,
   },
@@ -374,28 +314,6 @@ const styles = StyleSheet.create({
   },
   playerBuyIn: {
     fontSize: 16,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '80%',
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
   },
   modalBody: {
     alignItems: 'stretch',

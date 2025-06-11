@@ -9,7 +9,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
+import { Stack } from 'expo-router';
+import { useGameNavigation } from '@/hooks/useGameNavigation';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -59,6 +61,7 @@ export default function SettleUpScreen() {
   const [useWriteOffThreshold, setUseWriteOffThreshold] = useState(false);
   const [writeOffThreshold, setWriteOffThreshold] = useState(0);
   const colorScheme = useColorScheme();
+  const { screenOptions } = useGameNavigation('Settle Up', () => goToPreviousPhase());
   const textColor = useThemeColor({}, 'text');
   const accentColor = useThemeColor({}, 'buttonAccent');
   const cardBackground = useThemeColor({}, 'background');
@@ -104,7 +107,7 @@ export default function SettleUpScreen() {
 
   return (
       <ThemedView style={styles.container}>
-        <Stack.Screen options={{ headerShown: true,headerTitleAlign: 'center', headerTitle: 'Settle Up', headerLeft: () => <TouchableOpacity onPress={() => goToPreviousPhase()}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={textColor} /></TouchableOpacity> }} />
+        <Stack.Screen options={screenOptions} />
 
         <ScrollView
           style={styles.scrollView}
@@ -206,10 +209,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 20,
-  },
-  backButton: {
-    paddingLeft: 20,
-    paddingRight: 20,
   },
   placeholder: {
     width: 34, // Same as backButton to center the title

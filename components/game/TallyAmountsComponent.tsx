@@ -3,17 +3,19 @@ import {
   StyleSheet,
   View,
   ScrollView,
-  TouchableOpacity,
-  Modal,
   TextInput,
   Alert,
   Switch,
   FlatList,
   Text
 } from 'react-native';
+import { Card } from '@/components/ui/Card';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
+import { Stack } from 'expo-router';
+import { useGameNavigation } from '@/hooks/useGameNavigation';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -25,101 +27,6 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useGameContext } from '@/context/GameContext';
 import { Player } from '@/context/GameContext';
 import { saveGameToHistory } from '@/utils/gameHistory';
-
-// Player tally card component with progress indicator
-const PlayerTallyCard = ({
-  player,
-  onPress
-}: {
-  player: Player;
-  onPress: () => void;
-}) => {
-  const colorScheme = useColorScheme() ?? 'light';
-  const cardBackground = colorScheme === 'dark' ? '#333' : '#f5f5f5';
-  const borderColor = useThemeColor({}, 'icon');
-  const textColor = useThemeColor({}, 'text');
-  const positiveColor = '#4CAF50'; // green for profit
-  const negativeColor = '#F44336'; // red for loss
-  const warningColor = '#FF9800'; // orange for warning
-
-  const profit = player.finalAmount !== undefined ? player.finalAmount - player.buyIn : 0;
-  const profitColor = profit >= 0 ? positiveColor : negativeColor;
-
-  // Determine border color based on completion and error state
-  const getBorderColor = () => {
-    if (!player.isComplete) return borderColor;
-    if (player.hasError) return warningColor;
-    return positiveColor;
-  };
-
-  return (
-    <TouchableOpacity
-      style={[
-        styles.playerCard,
-        {
-          backgroundColor: cardBackground,
-          borderColor: getBorderColor(),
-          borderWidth: player.isComplete ? 2 : 1,
-        }
-      ]}
-      onPress={onPress}
-    >
-      <View style={styles.playerCardContent}>
-        <ThemedText style={styles.playerName}>{player.name}</ThemedText>
-
-        {player.isComplete ? (
-          <View style={styles.playerStatRow}>
-            <View style={styles.statItem}>
-              <ThemedText style={styles.statLabel}>Buy-in</ThemedText>
-              <ThemedText style={styles.statValue}>${player.buyIn.toLocaleString()}</ThemedText>
-            </View>
-
-            <View style={styles.statItem}>
-              <ThemedText style={styles.statLabel}>Cash-out</ThemedText>
-              <ThemedText style={styles.statValue}>${player.finalAmount?.toLocaleString() || '0'}</ThemedText>
-            </View>
-
-            <View style={styles.statItem}>
-              <ThemedText style={styles.statLabel}>Profit</ThemedText>
-              <ThemedText style={[styles.statValue, { color: profitColor }]}>
-                {profit >= 0 ? '+' : ''}{profit.toLocaleString()}
-              </ThemedText>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.tapToTallyContainer}>
-            <Ionicons name="calculator-outline" size={20} color={textColor} />
-            <ThemedText style={styles.tapToTallyText}>Tap to enter final amount</ThemedText>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.playerCardActions}>
-        {player.isComplete ? (
-          player.hasError ? (
-            <Ionicons
-              name="warning"
-              size={24}
-              color={warningColor}
-            />
-          ) : (
-            <Ionicons
-              name="checkmark-circle"
-              size={24}
-              color={positiveColor}
-            />
-          )
-        ) : (
-          <Ionicons
-            name="chevron-forward"
-            size={24}
-            color={Colors[colorScheme].text}
-          />
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-};
 
 // Chip Tally Modal Component
 const ChipTallyModal = ({
@@ -263,67 +170,45 @@ const ChipTallyModal = ({
   const playerName = player ? player.name : '';
 
   return (
-    <Modal
+    <BaseModal
       visible={visible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={onClose}
+      onClose={onClose}
+      title={`${playerName}'s Final Tally`}
     >
-      <View style={styles.modalOverlay}>
-        <View style={[
-          styles.modalContent,
-          {
-            backgroundColor: modalBackground,
-            borderColor
-          }
-        ]}>
-          <View style={styles.modalHeader}>
-            <ThemedText style={styles.modalTitle}>{playerName}'s Final Tally</ThemedText>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons
-                name="close"
-                size={24}
-                color={Colors[colorScheme].text}
-              />
-            </TouchableOpacity>
+      {player && (
+        <>
+          <View style={styles.inputMethodToggle}>
+            <ThemedText style={styles.toggleLabel}>Enter total amount</ThemedText>
+            <Switch
+              value={useChipCounting}
+              onValueChange={setUseChipCounting}
+              trackColor={{ false: '#767577', true: buttonPrimaryColor }}
+              thumbColor="#f4f3f4"
+            />
+            <ThemedText style={styles.toggleLabel}>Count chips</ThemedText>
           </View>
 
-          {player && (
-            <>
-              <View style={styles.inputMethodToggle}>
-                <ThemedText style={styles.toggleLabel}>Enter total amount</ThemedText>
-                <Switch
-                  value={useChipCounting}
-                  onValueChange={setUseChipCounting}
-                  trackColor={{ false: '#767577', true: buttonPrimaryColor }}
-                  thumbColor="#f4f3f4"
-                />
-                <ThemedText style={styles.toggleLabel}>Count chips</ThemedText>
-              </View>
+          <ScrollView style={styles.modalBody}>
+            {useChipCounting ? renderChipCountingForm() : renderDirectAmountForm()}
+          </ScrollView>
 
-              <ScrollView style={styles.modalBody}>
-                {useChipCounting ? renderChipCountingForm() : renderDirectAmountForm()}
-              </ScrollView>
-
-              <View style={styles.buttonRow}>
-                <ThemedButton
-                  title="Cancel"
-                  type="outline"
-                  onPress={onClose}
-                  style={{ flex: 1, marginRight: 10 }}
-                />
-                <ThemedButton
-                  title="Save"
-                  onPress={handleSaveTally}
-                  style={{ flex: 1 }}
-                  type="primary"
-                />
-              </View>
-            </>
-          )}
-        </View>
-      </View>
-    </Modal>
+          <View style={styles.buttonRow}>
+            <ThemedButton
+              title="Cancel"
+              type="outline"
+              onPress={onClose}
+              style={{ flex: 1, marginRight: 10 }}
+            />
+            <ThemedButton
+              title="Save"
+              onPress={handleSaveTally}
+              style={{ flex: 1 }}
+              type="primary"
+            />
+          </View>
+        </>
+      )}
+    </BaseModal>
   );
 };
 
@@ -380,61 +265,124 @@ export default function TallyUpScreen() {
     goToNextPhase();
   };
 
+  const { screenOptions } = useGameNavigation('Tally Up Results', () => goToPreviousPhase());
   const textColor = useThemeColor({}, 'text');
+  const colorScheme = useColorScheme() ?? 'light';
   const totalBuyIn = getTotalBuyIn();
   const totalCashOut = getTotalCashOut();
   const isBalanced = Math.abs(totalBuyIn - totalCashOut) < 0.01;
   const allPlayersHaveEntered = gameState.players.length > 0 && gameState.players.every(player => player.isComplete);
 
-  return (
-      <ThemedView style={styles.container}>
-        <Stack.Screen options={{ headerShown: true, headerTitleAlign: 'center', headerTitle: 'Tally Up Results', headerBackButtonMenuEnabled: true, headerLeft: () => <TouchableOpacity onPress={() => goToPreviousPhase()}><Ionicons name="arrow-back" style={styles.backButton} size={24} color={textColor} /></TouchableOpacity> }} />
+  const renderPlayerCard = (player: Player) => {
+    const profit = player.finalAmount !== undefined ? player.finalAmount - player.buyIn : 0;
 
-        {allPlayersHaveEntered && !isBalanced && (
-          <View style={styles.errorBanner}>
-            <Ionicons name="warning" size={20} color="#FFFFFF" />
-            <ThemedText style={styles.errorText}>
-              Total buy-in (${totalBuyIn}) doesn't match total cash-out (${totalCashOut})
-            </ThemedText>
-          </View>
-        )}
+    return (
+      <Card
+        key={player.id}
+        onPress={() => handlePlayerPress(player)}
+        highlighted={player.isComplete}
+        highlightColor={player.hasError ? '#FF9800' : '#4CAF50'}
+      >
+        <View style={styles.playerCardContent}>
+          <ThemedText style={styles.playerName}>{player.name}</ThemedText>
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {gameState.players.length === 0 ? (
-            <ThemedText style={styles.emptyState}>
-              No players in the game. Return to the game screen to add players.
-            </ThemedText>
+          {player.isComplete ? (
+            <View style={styles.playerStatRow}>
+              <View style={styles.statItem}>
+                <ThemedText style={styles.statLabel}>Buy-in</ThemedText>
+                <ThemedText style={styles.statValue}>${player.buyIn.toLocaleString()}</ThemedText>
+              </View>
+
+              <View style={styles.statItem}>
+                <ThemedText style={styles.statLabel}>Cash-out</ThemedText>
+                <ThemedText style={styles.statValue}>${player.finalAmount?.toLocaleString() || '0'}</ThemedText>
+              </View>
+
+              <View style={styles.statItem}>
+                <ThemedText style={styles.statLabel}>Profit</ThemedText>
+                <ThemedText style={[styles.statValue, { color: profit >= 0 ? '#4CAF50' : '#F44336' }]}>
+                  {profit >= 0 ? '+' : ''}{profit.toLocaleString()}
+                </ThemedText>
+              </View>
+            </View>
           ) : (
-            gameState.players.map(player => (
-              <PlayerTallyCard
-                key={player.id}
-                player={player}
-                onPress={() => handlePlayerPress(player)}
-              />
-            ))
+            <View style={styles.tapToTallyContainer}>
+              <Ionicons name="calculator-outline" size={20} color={textColor} />
+              <ThemedText style={styles.tapToTallyText}>Tap to enter final amount</ThemedText>
+            </View>
           )}
-        </ScrollView>
-
-        <View style={styles.bottomButtonContainer}>
-          <ThemedButton
-            title="Settle Up"
-            onPress={handleSettleUp}
-            type="primary"
-            icon={<Ionicons name="cash-outline" size={24} color="#FFFFFF" />}
-            disabled={!areAllPlayersComplete()}
-          />
         </View>
 
-        <ChipTallyModal
-          visible={modalVisible}
-          player={selectedPlayer}
-          onClose={() => setModalVisible(false)}
-          onSaveTally={handleSaveTally}
+        <View style={styles.playerCardActions}>
+          {player.isComplete ? (
+            player.hasError ? (
+              <Ionicons
+                name="warning"
+                size={24}
+                color="#FF9800"
+              />
+            ) : (
+              <Ionicons
+                name="checkmark-circle"
+                size={24}
+                color="#4CAF50"
+              />
+            )
+          ) : (
+            <Ionicons
+              name="chevron-forward"
+              size={24}
+              color={Colors[colorScheme].text}
+            />
+          )}
+        </View>
+      </Card>
+    );
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <Stack.Screen options={screenOptions} />
+
+      {allPlayersHaveEntered && !isBalanced && (
+        <View style={styles.errorBanner}>
+          <Ionicons name="warning" size={20} color="#FFFFFF" />
+          <ThemedText style={styles.errorText}>
+            Total buy-in (${totalBuyIn}) doesn't match total cash-out (${totalCashOut})
+          </ThemedText>
+        </View>
+      )}
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {gameState.players.length === 0 ? (
+          <ThemedText style={styles.emptyState}>
+            No players in the game. Return to the game screen to add players.
+          </ThemedText>
+        ) : (
+          gameState.players.map(player => renderPlayerCard(player))
+        )}
+      </ScrollView>
+
+      <View style={styles.bottomButtonContainer}>
+        <ThemedButton
+          title="Settle Up"
+          onPress={handleSettleUp}
+          type="primary"
+          icon={<Ionicons name="cash-outline" size={24} color="#FFFFFF" />}
+          disabled={!areAllPlayersComplete()}
         />
-      </ThemedView>
+      </View>
+
+      <ChipTallyModal
+        visible={modalVisible}
+        player={selectedPlayer}
+        onClose={() => setModalVisible(false)}
+        onSaveTally={handleSaveTally}
+      />
+    </ThemedView>
   );
 }
 
@@ -449,10 +397,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 20,
-  },
-  backButton: {
-    paddingLeft: 20,
-    paddingRight: 20,
   },
   placeholder: {
     width: 34, // Same as backButton to center the title
@@ -473,18 +417,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 50,
     opacity: 0.7,
-  },
-  playerCard: {
-    flexDirection: 'row',
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 15,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   playerCardContent: {
     flex: 1,
@@ -523,29 +455,6 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 14,
     opacity: 0.7,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '90%',
-    maxHeight: '80%',
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
   },
   modalBody: {
     maxHeight: 400,
