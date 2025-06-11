@@ -9,9 +9,7 @@ import {
   Alert,
   Modal
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { Stack } from 'expo-router';
 import { useGameNavigation } from '@/hooks/useGameNavigation';
 import { ThemedText } from '@/components/ThemedText';

@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, FlatList, TouchableOpacity, StyleSheet, Modal, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { ThemedButton } from '@/components/ThemedButton';
 import { Ionicons } from '@expo/vector-icons';
 import { getGameHistory, GameHistoryEntry } from '@/utils/gameHistory';
 import { useColorScheme } from '@/hooks/useColorScheme';

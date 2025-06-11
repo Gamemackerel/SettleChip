@@ -3,13 +3,10 @@ import {
   StyleSheet,
   View,
   ScrollView,
-  TouchableOpacity,
   FlatList,
   Switch,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { Stack } from 'expo-router';
 import { useGameNavigation } from '@/hooks/useGameNavigation';
 
@@ -19,7 +16,6 @@ import { ThemedButton } from '@/components/ThemedButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useGameContext } from '@/context/GameContext';
-import { Player } from '@/context/GameContext';
 import { Transaction, calculateOptimalSettlement } from '@/utils/settlementAlgorithm';
 
 // Transaction card component

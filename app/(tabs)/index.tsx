@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { Stack } from 'expo-router';
 import { useGameContext } from '@/context/GameContext';
 
 // Import your game phase components

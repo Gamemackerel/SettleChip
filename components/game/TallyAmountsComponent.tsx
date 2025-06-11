@@ -6,17 +6,13 @@ import {
   TextInput,
   Alert,
   Switch,
-  FlatList,
   Text
 } from 'react-native';
 import { Card } from '@/components/ui/Card';
 import { BaseModal } from '@/components/ui/BaseModal';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { Stack } from 'expo-router';
 import { useGameNavigation } from '@/hooks/useGameNavigation';
-
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedButton } from '@/components/ThemedButton';
