@@ -319,8 +319,6 @@ const styles = StyleSheet.create({
   chipListContainer: {
     paddingBottom: 15,
     marginBottom: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(150, 150, 150, 0.2)',
     alignItems: 'center'
   },
   horizontalChipList: {
@@ -336,6 +334,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   scrollView: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(150, 150, 150, 0.2)',
     paddingTop: 15,
     paddingBottom: 15,
     flex: 1,
