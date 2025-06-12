@@ -20,10 +20,19 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useGameContext } from '@/context/GameContext';
-import { Collapsible } from '@/components/Collapsible';
-import { findAllSolutions, findBestSolution } from '@/utils/distributionAlgorithm';
 import { ChipType } from '@/types/types';
 import { chipConfigurationStyles } from '@/styles/styles';
+import { Collapsible } from '@/components/Collapsible';
+import { findAllSolutions, findBestSolution } from '@/utils/distributionAlgorithm';
+// Import common styles
+import {
+  layoutStyles,
+  textStyles,
+  formStyles,
+  cardStyles,
+  listStyles,
+  buttonStyles
+} from '@/styles/commonStyles';
 
 const defaultChips: ChipType[] = [
   { id: 'white', color: '#FFFFFF', displayName: 'White', value: 1, quantity: 0 },
@@ -54,7 +63,7 @@ function ThemedInput({
   return (
     <TextInput
       style={[
-        styles.input,
+        formStyles.input,
         {
           color: textColor,
           borderColor,
@@ -137,7 +146,7 @@ function PlayerTagInput({
   };
 
   return (
-    <View style={[styles.tagInputContainer, { borderColor }]}>
+    <View style={[formStyles.tagInputContainer, { borderColor }]}>
       <ScrollView
         horizontal={false}
         contentContainerStyle={styles.tagScrollContainer}
@@ -162,7 +171,7 @@ function PlayerTagInput({
           <TextInput
             ref={inputRef}
             style={[
-              styles.tagInput,
+              formStyles.tagInput,
               {
                 color: textColor,
                 width: '80%',
@@ -266,7 +275,7 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={chipConfigurationStyles.modalOverlay}>
         <View style={[chipConfigurationStyles.modalContent, { backgroundColor: modalBg, borderColor }]}>
-          <ThemedText style={styles.sectionHeader}>Chip Wizard</ThemedText>
+          <ThemedText style={textStyles.sectionHeader}>Chip Wizard</ThemedText>
 
           <View>
             <ThemedText style={chipConfigurationStyles.chipConfigLabel}>Big Blind</ThemedText>
@@ -275,7 +284,7 @@ function ChipAutogenModal({ visible, onClose, bigBlindAmount, chipSetType, onBig
               onChangeText={onBigBlindChange}
               staticColor="#aed581" // Solid green for big blind
             />
-            <ThemedText style={styles.subLabel}>
+            <ThemedText style={textStyles.subLabel}>
               {bigBlind > 0 && buyIn > 0 ? `(${bbPerPlayer} bb / player)` : '(—)'}
             </ThemedText>
           </View>
@@ -390,22 +399,22 @@ export default function SetupGameScreen() {
   };
 
   return (
-      <ThemedView style={styles.outerContainer}>
+      <ThemedView style={layoutStyles.container}>
         <Stack.Screen options={screenOptions} />
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView style={layoutStyles.scrollView} contentContainerStyle={layoutStyles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Buy-In */}
           <View style={styles.buyInContainer}>
-            <ThemedText style={styles.sectionHeader}>
+            <ThemedText style={textStyles.sectionHeader}>
               Buy <Text style={styles.moneyBagEmoji}>💰</Text> In
             </ThemedText>
             <MoneyInput value={buyInAmount} onChangeText={handleBuyInChange} />
-            <ThemedText style={styles.subLabel}>(per player)</ThemedText>
+            <ThemedText style={textStyles.subLabel}>(per player)</ThemedText>
           </View>
 
           {/* Players */}
-          <View style={styles.sectionContainer}>
-            <ThemedText style={styles.sectionHeader}>Players</ThemedText>
-            <View style={styles.inputWrapper}>
+          <View style={formStyles.sectionContainer}>
+            <ThemedText style={textStyles.sectionHeader}>Players</ThemedText>
+            <View style={formStyles.inputWrapper}>
               <PlayerTagInput players={players} onAddPlayer={handleAddPlayer} onRemovePlayer={handleRemovePlayer} />
             </View>
           </View>
@@ -413,7 +422,7 @@ export default function SetupGameScreen() {
           {/* Chip Configuration with heading, summary, and edit */}
           <Collapsible title={
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <ThemedText style={[styles.sectionHeader, { paddingLeft: 0, paddingTop: 7 }]}>Starting Chip Stacks</ThemedText>
+              <ThemedText style={[textStyles.sectionHeader, { paddingLeft: 0, paddingTop: 7 }]}>Starting Chip Stacks</ThemedText>
             </View>
           } onOpen={() => setIsChipConfigOpen(true)} onClose={() => setIsChipConfigOpen(false)}>
             <View style={chipConfigurationStyles.chipConfigHeader}>
@@ -436,7 +445,7 @@ export default function SetupGameScreen() {
               ))}
             </View>
           </Collapsible>
-          <ThemedButton title="Start Game" onPress={handleStartGame} icon={<Ionicons name="play" size={24} color="#FFFFFF" />} style={styles.startGameButton} type="primary" />
+          <ThemedButton title="Start Game" onPress={handleStartGame} icon={<Ionicons name="play" size={24} color="#FFFFFF" />} style={buttonStyles.buttonSpacing} type="primary" />
         </ScrollView>
         {/* Modal for editing chip autogen controls */}
         <ChipAutogenModal
@@ -453,7 +462,7 @@ export default function SetupGameScreen() {
         <Modal visible={showChipExplainer} transparent animationType="fade" onRequestClose={() => setShowChipExplainer(false)}>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0008' }}>
             <View style={{ backgroundColor: Colors[colorScheme].background, padding: 24, borderRadius: 12, maxWidth: 320 }}>
-              <ThemedText style={[styles.subLabel, { marginBottom: 16 }]}>
+              <ThemedText style={[textStyles.subLabel, { marginBottom: 16 }]}>
                 The chip setup wizard can help you find a reasonable starting pile based on buy-in, amount of chips, and amount of players!
               </ThemedText>
               <ThemedButton title="Close" onPress={() => setShowChipExplainer(false)} />
@@ -464,45 +473,8 @@ export default function SetupGameScreen() {
   );
 }
 
+// Component-specific styles only
 const styles = StyleSheet.create({
-  outerContainer: {
-    flex: 1,
-    padding: 20,
-    paddingBottom: 0
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 20,
-  },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  label: {
-    fontSize: 16,
-    marginTop: 15,
-    alignSelf: 'flex-start',
-  },
-  input: {
-    height: 40,
-    borderWidth: 1,
-    borderRadius: 5,
-    marginTop: 5,
-    marginBottom: 0,
-    paddingHorizontal: 10,
-    width: '100%',
-    textAlignVertical: 'center',
-    paddingVertical: 0,
-  },
   buyInContainer: {
     width: '100%',
     alignItems: 'center',
@@ -510,37 +482,7 @@ const styles = StyleSheet.create({
   moneyBagEmoji: {
     fontSize: 24
   },
-  subLabel: {
-    fontSize: 12,
-    marginTop: 0,
-    opacity: 0.7,
-    textAlign: 'center',
-  },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    width: '100%',
-    paddingLeft: '5%',
-    paddingTop: 12,
-    textAlign: 'left',
-  },
-  sectionContainer: {
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  inputWrapper: {
-    width: '80%',
-  },
   // Tag Input styles
-  tagInputContainer: {
-    borderWidth: 1,
-    borderRadius: 5,
-    minHeight: 50,
-    width: '100%',
-    padding: 5,
-  },
   tagScrollContainer: {
     flexGrow: 1,
   },
@@ -564,15 +506,5 @@ const styles = StyleSheet.create({
   tagRemoveButton: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  tagInput: {
-    minWidth: 100,
-    height: 40,
-    padding: 5,
-    flex: 1,
-  },
-  startGameButton: {
-    marginTop: 20,
-    marginBottom: 30,
   },
 });

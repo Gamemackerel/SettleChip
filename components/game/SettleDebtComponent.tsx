@@ -9,7 +9,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import { useGameNavigation } from '@/hooks/useGameNavigation';
-
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedButton } from '@/components/ThemedButton';
@@ -17,6 +16,16 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useGameContext } from '@/context/GameContext';
 import { Transaction, calculateOptimalSettlement } from '@/utils/settlementAlgorithm';
+// Import common styles
+import {
+  layoutStyles,
+  textStyles,
+  cardStyles,
+  listStyles,
+  buttonStyles,
+  infoStyles,
+  iconStyles
+} from '@/styles/commonStyles';
 
 // Transaction card component
 const TransactionCard = ({ transaction }: { transaction: Transaction }) => {
@@ -28,7 +37,7 @@ const TransactionCard = ({ transaction }: { transaction: Transaction }) => {
   const hasWriteOff = transaction.writeOff && transaction.writeOff > 0;
 
   return (
-    <View style={[styles.transactionCard, { backgroundColor, borderColor }]}>
+    <View style={[cardStyles.transactionCard, { backgroundColor, borderColor }]}>
       <View style={styles.transactionArrow}>
         <ThemedText style={styles.fromName}>{transaction.from.name}</ThemedText>
         <View style={styles.arrowContainer}>
@@ -102,17 +111,17 @@ export default function SettleUpScreen() {
   };
 
   return (
-      <ThemedView style={styles.container}>
+      <ThemedView style={layoutStyles.container}>
         <Stack.Screen options={screenOptions} />
 
         <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          style={layoutStyles.scrollView}
+          contentContainerStyle={layoutStyles.scrollContent}
         >
           {!gameState.isTallyBalanced ? (
-            <View style={styles.errorContainer}>
+            <View style={iconStyles.warningContainer}>
               <Ionicons name="warning" size={32} color="#FF9800" />
-              <ThemedText style={styles.errorText}>
+              <ThemedText style={textStyles.errorText}>
                 Cannot calculate settlements because the tally is not balanced.
               </ThemedText>
               <ThemedButton
@@ -157,8 +166,8 @@ export default function SettleUpScreen() {
               )}
 
               <View style={styles.sectionContainer}>
-                <ThemedText style={styles.sectionTitle}>Recommended Transactions</ThemedText>
-                <ThemedText style={styles.sectionDescription}>
+                <ThemedText style={textStyles.sectionTitle}>Recommended Transactions</ThemedText>
+                <ThemedText style={textStyles.sectionDescription}>
                   The following transactions will settle all debts with the minimum number of payments:
                 </ThemedText>
 
@@ -168,12 +177,12 @@ export default function SettleUpScreen() {
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => <TransactionCard transaction={item} />}
                     scrollEnabled={false}
-                    style={styles.transactionList}
+                    style={listStyles.transactionList}
                   />
                 ) : (
-                  <View style={styles.noTransactionsContainer}>
+                  <View style={iconStyles.successContainer}>
                     <Ionicons name="checkmark-circle" size={32} color="#4CAF50" />
-                    <ThemedText style={styles.noTransactionsText}>
+                    <ThemedText style={textStyles.noTransactionsText}>
                       No transactions needed! Everyone is settled up.
                     </ThemedText>
                   </View>
@@ -183,7 +192,7 @@ export default function SettleUpScreen() {
           )}
         </ScrollView>
 
-        <View style={styles.bottomButtonContainer}>
+        <View style={buttonStyles.buttonContainer}>
           <ThemedButton
             title="New Game"
             onPress={handleNewGame}
@@ -195,54 +204,8 @@ export default function SettleUpScreen() {
   );
 }
 
+// Component-specific styles only
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  placeholder: {
-    width: 34, // Same as backButton to center the title
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 80,
-  },
-  sectionContainer: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  sectionDescription: {
-    fontSize: 14,
-    marginBottom: 16,
-    opacity: 0.8,
-    lineHeight: 20,
-  },
-  transactionList: {
-    width: '100%',
-  },
-  transactionCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-  },
   transactionArrow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -283,36 +246,6 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     color: '#FF9800',
   },
-  errorContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginVertical: 16,
-    opacity: 0.8,
-    lineHeight: 22,
-  },
-  noTransactionsContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  noTransactionsText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 16,
-    opacity: 0.8,
-    lineHeight: 22,
-  },
-  bottomButtonContainer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 20,
-    right: 20,
-  },
   settingsContainer: {
     marginBottom: 20,
     borderRadius: 12,
@@ -348,5 +281,8 @@ const styles = StyleSheet.create({
   writeOffSummaryText: {
     fontSize: 14,
     marginLeft: 8,
+  },
+  sectionContainer: {
+    marginBottom: 24,
   },
 });

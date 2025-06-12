@@ -20,7 +20,16 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useGameContext } from '@/context/GameContext';
 import { chipConfigurationStyles } from '@/styles/styles';
 import { ChipType } from '@/types/types';
-
+// Import common styles
+import {
+  layoutStyles,
+  textStyles,
+  playerStyles,
+  infoStyles,
+  formStyles,
+  listStyles,
+  actionButtonSpacing
+} from '@/styles/commonStyles';
 
 // Player action modal component
 const PlayerActionModal = ({
@@ -39,9 +48,10 @@ const PlayerActionModal = ({
   const colorScheme = useColorScheme() ?? 'light';
   const borderColor = useThemeColor({}, 'icon');
   const buttonPrimaryColor = useThemeColor({}, 'buttonPrimary');
+  const modalBackground = colorScheme === 'dark' ? '#222' : '#fff';
+
   const [amount, setAmount] = useState('');
   const [showAddFundsInput, setShowAddFundsInput] = useState(false);
-  const modalBackground = colorScheme === 'dark' ? '#222' : '#fff';
 
   const handleAddFunds = () => {
     const numAmount = parseFloat(amount);
@@ -75,14 +85,14 @@ const PlayerActionModal = ({
               title="Add Funds"
               onPress={() => setShowAddFundsInput(true)}
               icon={<Ionicons name="add-circle-outline" size={24} color="#FFFFFF" />}
-              style={styles.actionButtonSpacing}
+              style={actionButtonSpacing}
               type="primary"
             />
           </>
         ) : (
           <View style={styles.addFundsContainer}>
             <ThemedText style={styles.addFundsTitle}>Add Funds</ThemedText>
-            <ThemedText style={styles.amountInputLabel}>Amount:</ThemedText>
+            <ThemedText style={textStyles.label}>Amount:</ThemedText>
             <View style={styles.moneyInputContainer}>
               <MoneyInput
                 value={amount}
@@ -90,7 +100,7 @@ const PlayerActionModal = ({
                 autoFocus={true}
               />
             </View>
-            <View style={styles.buttonRow}>
+            <View style={formStyles.formButtonRow}>
               <ThemedButton
                 title="Cancel"
                 type="outline"
@@ -110,7 +120,6 @@ const PlayerActionModal = ({
     </BaseModal>
   );
 };
-
 
 function ChipConfigItem({
   chip,
@@ -160,25 +169,22 @@ export default function GameScreen() {
       return;
     }
     finishGame();
-    // finishGame sets the phase, which triggers the next screen
   };
 
   const calculatedStartingChips = gameState.chipValues;
 
-
   return (
-      <ThemedView style={styles.container}>
+      <ThemedView style={layoutStyles.container}>
         <Stack.Screen options={screenOptions} />
 
-        <View style={styles.buyInInfoContainer}>
-          <ThemedText style={styles.buyInInfoLabel}>Initial Buy-In:</ThemedText>
-          <ThemedText style={styles.buyInInfoAmount}>${gameState.buyInAmount}</ThemedText>
+        <View style={infoStyles.infoContainer}>
+          <ThemedText style={infoStyles.infoLabel}>Initial Buy-In:</ThemedText>
+          <ThemedText style={infoStyles.infoAmount}>${gameState.buyInAmount}</ThemedText>
         </View>
 
         {calculatedStartingChips && calculatedStartingChips.length > 0 && (
           <View style={styles.chipListContainer}>
-            <View style={[styles.horizontalChipList]}>
-
+            <View style={listStyles.horizontalList}>
               {calculatedStartingChips.map(chip => (
                 <ChipConfigItem key={chip.color} chip={chip} />
               ))}
@@ -187,11 +193,11 @@ export default function GameScreen() {
         )}
 
         <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          style={layoutStyles.scrollViewWithTopBorder}
+          contentContainerStyle={layoutStyles.scrollContent}
         >
           {gameState.players.length === 0 ? (
-            <ThemedText style={styles.emptyState}>
+            <ThemedText style={textStyles.emptyState}>
               No players in the game. Go back to setup screen to add players.
             </ThemedText>
           ) : (
@@ -200,13 +206,13 @@ export default function GameScreen() {
                 key={player.id}
                 onPress={() => handlePlayerPress(player)}
               >
-                <View style={styles.playerCardContent}>
-                  <ThemedText style={styles.playerName}>{player.name}</ThemedText>
-                  <ThemedText style={styles.playerBuyIn}>
+                <View style={playerStyles.playerCardContent}>
+                  <ThemedText style={playerStyles.playerName}>{player.name}</ThemedText>
+                  <ThemedText style={playerStyles.playerBuyIn}>
                     ${player.buyIn.toLocaleString()}
                   </ThemedText>
                 </View>
-                <View style={styles.playerCardActions}>
+                <View style={playerStyles.playerCardActions}>
                   <Ionicons
                     name="ellipsis-vertical"
                     size={24}
@@ -218,7 +224,7 @@ export default function GameScreen() {
           )}
         </ScrollView>
 
-        <View style={styles.bottomButtonContainer}>
+        <View style={layoutStyles.bottomButtonContainer}>
           <ThemedButton
             title="Finish Game"
             onPress={handleFinishGame}
@@ -238,83 +244,15 @@ export default function GameScreen() {
   );
 }
 
+// Component-specific styles only
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  placeholder: {
-    width: 34, // Same as backButton to center the title
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  buyInInfoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 15
-  },
   chipListContainer: {
     paddingBottom: 15,
     marginBottom: 0,
     alignItems: 'center'
   },
-  horizontalChipList: {
-    flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center',
-  },
-  buyInInfoLabel: {
-    fontSize: 16,
-    marginRight: 5,
-    opacity: 0.8,
-  },
-  buyInInfoAmount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  scrollView: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(150, 150, 150, 0.2)',
-    paddingTop: 15,
-    paddingBottom: 15,
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 20,
-  },
-  emptyState: {
-    textAlign: 'center',
-    marginTop: 50,
-    opacity: 0.7,
-  },
-  playerCardContent: {
-    flex: 1,
-  },
-  playerCardActions: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playerName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  playerBuyIn: {
-    fontSize: 16,
-  },
   modalBody: {
     alignItems: 'stretch',
-  },
-  actionButtonSpacing: {
-    marginBottom: 15,
   },
   addFundsContainer: {
     padding: 10,
@@ -328,24 +266,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 15,
   },
-  amountInputLabel: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
   moneyInputContainer: {
     width: '100%',
     alignItems: 'center',
     marginBottom: 15,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  bottomButtonContainer: {
-    marginTop: 0,
-    marginBottom: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(150, 150, 150, 0.2)'
   },
 });

@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
   ScrollView,
-  TextInput,
   Alert,
   Switch,
-  Text
+  Text,
+  TextInput
 } from 'react-native';
 import { Card } from '@/components/ui/Card';
 import { BaseModal } from '@/components/ui/BaseModal';
@@ -23,6 +23,53 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useGameContext } from '@/context/GameContext';
 import { Player } from '@/context/GameContext';
 import { saveGameToHistory } from '@/utils/gameHistory';
+// Import common styles
+import {
+  layoutStyles,
+  textStyles,
+  cardStyles,
+  modalStyles,
+  formStyles,
+  playerStyles,
+  infoStyles,
+  listStyles,
+  iconStyles,
+  buttonStyles
+} from '@/styles/commonStyles';
+
+// Transaction card component
+const TransactionCard = ({ transaction }: { transaction: any }) => {
+  const backgroundColor = useThemeColor({}, 'background');
+  const borderColor = useThemeColor({}, 'border');
+  const textColor = useThemeColor({}, 'text');
+
+  // Handle write-off display
+  const hasWriteOff = transaction.writeOff && transaction.writeOff > 0;
+
+  return (
+    <View style={[cardStyles.transactionCard, { backgroundColor, borderColor }]}>
+      <View style={styles.transactionArrow}>
+        <ThemedText style={styles.fromName}>{transaction.from.name}</ThemedText>
+        <View style={styles.arrowContainer}>
+          <Ionicons name="arrow-forward" size={20} color={textColor} />
+        </View>
+        <ThemedText style={styles.toName}>{transaction.to.name}</ThemedText>
+      </View>
+      <ThemedText style={styles.transactionAmount}>
+        {transaction.amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+      </ThemedText>
+
+      {hasWriteOff && (
+        <View style={styles.writeOffContainer}>
+          <Ionicons name="information-circle-outline" size={16} color="#FF9800" />
+          <ThemedText style={styles.writeOffText}>
+            Includes write-off: {transaction.writeOff?.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+          </ThemedText>
+        </View>
+      )}
+    </View>
+  );
+};
 
 // Chip Tally Modal Component
 const ChipTallyModal = ({
@@ -50,8 +97,6 @@ const ChipTallyModal = ({
     { color: 'green', value: 25, count: 0 },
     { color: 'black', value: 100, count: 0 },
   ]);
-
-  const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (visible && player) {
@@ -171,39 +216,35 @@ const ChipTallyModal = ({
       onClose={onClose}
       title={`${playerName}'s Final Tally`}
     >
-      {player && (
-        <>
-          <View style={styles.inputMethodToggle}>
-            <ThemedText style={styles.toggleLabel}>Enter total amount</ThemedText>
-            <Switch
-              value={useChipCounting}
-              onValueChange={setUseChipCounting}
-              trackColor={{ false: '#767577', true: buttonPrimaryColor }}
-              thumbColor="#f4f3f4"
-            />
-            <ThemedText style={styles.toggleLabel}>Count chips</ThemedText>
-          </View>
+      <View style={formStyles.toggleContainer}>
+        <ThemedText style={formStyles.toggleLabel}>Enter total amount</ThemedText>
+        <Switch
+          value={useChipCounting}
+          onValueChange={setUseChipCounting}
+          trackColor={{ false: '#767577', true: buttonPrimaryColor }}
+          thumbColor="#f4f3f4"
+        />
+        <ThemedText style={formStyles.toggleLabel}>Count chips</ThemedText>
+      </View>
 
-          <ScrollView style={styles.modalBody}>
-            {useChipCounting ? renderChipCountingForm() : renderDirectAmountForm()}
-          </ScrollView>
+      <ScrollView style={modalStyles.modalBodyScrollable}>
+        {useChipCounting ? renderChipCountingForm() : renderDirectAmountForm()}
+      </ScrollView>
 
-          <View style={styles.buttonRow}>
-            <ThemedButton
-              title="Cancel"
-              type="outline"
-              onPress={onClose}
-              style={{ flex: 1, marginRight: 10 }}
-            />
-            <ThemedButton
-              title="Save"
-              onPress={handleSaveTally}
-              style={{ flex: 1 }}
-              type="primary"
-            />
-          </View>
-        </>
-      )}
+      <View style={formStyles.formButtonRow}>
+        <ThemedButton
+          title="Cancel"
+          type="outline"
+          onPress={onClose}
+          style={{ flex: 1, marginRight: 10 }}
+        />
+        <ThemedButton
+          title="Save"
+          onPress={handleSaveTally}
+          style={{ flex: 1 }}
+          type="primary"
+        />
+      </View>
     </BaseModal>
   );
 };
@@ -279,24 +320,24 @@ export default function TallyUpScreen() {
         highlighted={player.isComplete}
         highlightColor={player.hasError ? '#FF9800' : '#4CAF50'}
       >
-        <View style={styles.playerCardContent}>
-          <ThemedText style={styles.playerName}>{player.name}</ThemedText>
+        <View style={playerStyles.playerCardContent}>
+          <ThemedText style={playerStyles.playerName}>{player.name}</ThemedText>
 
           {player.isComplete ? (
-            <View style={styles.playerStatRow}>
-              <View style={styles.statItem}>
-                <ThemedText style={styles.statLabel}>Buy-in</ThemedText>
-                <ThemedText style={styles.statValue}>${player.buyIn.toLocaleString()}</ThemedText>
+            <View style={playerStyles.playerStatRow}>
+              <View style={playerStyles.statItem}>
+                <ThemedText style={playerStyles.statLabel}>Buy-in</ThemedText>
+                <ThemedText style={playerStyles.statValue}>${player.buyIn.toLocaleString()}</ThemedText>
               </View>
 
-              <View style={styles.statItem}>
-                <ThemedText style={styles.statLabel}>Cash-out</ThemedText>
-                <ThemedText style={styles.statValue}>${player.finalAmount?.toLocaleString() || '0'}</ThemedText>
+              <View style={playerStyles.statItem}>
+                <ThemedText style={playerStyles.statLabel}>Cash-out</ThemedText>
+                <ThemedText style={playerStyles.statValue}>${player.finalAmount?.toLocaleString() || '0'}</ThemedText>
               </View>
 
-              <View style={styles.statItem}>
-                <ThemedText style={styles.statLabel}>Profit</ThemedText>
-                <ThemedText style={[styles.statValue, { color: profit >= 0 ? '#4CAF50' : '#F44336' }]}>
+              <View style={playerStyles.statItem}>
+                <ThemedText style={playerStyles.statLabel}>Profit</ThemedText>
+                <ThemedText style={[playerStyles.statValue, { color: profit >= 0 ? '#4CAF50' : '#F44336' }]}>
                   {profit >= 0 ? '+' : ''}{profit.toLocaleString()}
                 </ThemedText>
               </View>
@@ -309,7 +350,7 @@ export default function TallyUpScreen() {
           )}
         </View>
 
-        <View style={styles.playerCardActions}>
+        <View style={playerStyles.playerCardActions}>
           {player.isComplete ? (
             player.hasError ? (
               <Ionicons
@@ -337,24 +378,24 @@ export default function TallyUpScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={layoutStyles.container}>
       <Stack.Screen options={screenOptions} />
 
       {allPlayersHaveEntered && !isBalanced && (
-        <View style={styles.errorBanner}>
+        <View style={infoStyles.errorBanner}>
           <Ionicons name="warning" size={20} color="#FFFFFF" />
-          <ThemedText style={styles.errorText}>
+          <ThemedText style={infoStyles.errorText}>
             Total buy-in (${totalBuyIn}) doesn't match total cash-out (${totalCashOut})
           </ThemedText>
         </View>
       )}
 
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        style={layoutStyles.scrollViewWithTopBorder}
+        contentContainerStyle={layoutStyles.scrollContent}
       >
         {gameState.players.length === 0 ? (
-          <ThemedText style={styles.emptyState}>
+          <ThemedText style={textStyles.emptyState}>
             No players in the game. Return to the game screen to add players.
           </ThemedText>
         ) : (
@@ -362,7 +403,7 @@ export default function TallyUpScreen() {
         )}
       </ScrollView>
 
-      <View style={styles.bottomButtonContainer}>
+      <View style={layoutStyles.bottomButtonContainer}>
         <ThemedButton
           title="Settle Up"
           onPress={handleSettleUp}
@@ -382,100 +423,47 @@ export default function TallyUpScreen() {
   );
 }
 
+// Component-specific styles only
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    paddingTop: 0,
-  },
-  header: {
+  transactionArrow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 8,
   },
-  placeholder: {
-    width: 34, // Same as backButton to center the title
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  scrollView: {
-    paddingTop: 15,
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 20,
-  },
-  emptyState: {
-    textAlign: 'center',
-    marginTop: 50,
-    opacity: 0.7,
-  },
-  playerCardContent: {
-    flex: 1,
-  },
-  playerCardActions: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playerName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  playerStatRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 5,
-  },
-  statItem: {
-    flex: 1,
-  },
-  statLabel: {
-    fontSize: 12,
-    opacity: 0.7,
-  },
-  statValue: {
+  fromName: {
     fontSize: 16,
+    fontWeight: '500',
+    flex: 1,
+  },
+  arrowContainer: {
+    paddingHorizontal: 8,
+  },
+  toName: {
+    fontSize: 16,
+    fontWeight: '500',
+    flex: 1,
+    textAlign: 'right',
+  },
+  transactionAmount: {
+    fontSize: 18,
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 8,
   },
-  tapToTallyContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 5,
-  },
-  tapToTallyText: {
-    marginLeft: 5,
-    fontSize: 14,
-    opacity: 0.7,
-  },
-  modalBody: {
-    maxHeight: 400,
-  },
-  inputMethodToggle: {
+  writeOffContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 15,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(150, 150, 150, 0.2)',
+    marginTop: 8,
+    padding: 4,
+    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+    borderRadius: 4,
   },
-  toggleLabel: {
-    marginHorizontal: 8,
-    fontSize: 14,
-  },
-  directAmountForm: {
-    paddingVertical: 10,
-  },
-  directAmountTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
+  writeOffText: {
+    fontSize: 12,
+    marginLeft: 4,
+    color: '#FF9800',
   },
   chipCountingForm: {
     paddingVertical: 10,
@@ -490,7 +478,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-    paddingVertical: 5,
+    paddingVertical: 8,
   },
   chipIcon: {
     width: 24,
@@ -535,30 +523,23 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
+  directAmountForm: {
+    paddingVertical: 10,
   },
-  bottomButtonContainer: {
-    marginTop: 0,
-    marginBottom: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(150, 150, 150, 0.2)'
+  directAmountTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
   },
-  errorBanner: {
+  tapToTallyContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF9800',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 15,
+    marginTop: 5,
   },
-  errorText: {
-    color: '#FFFFFF',
-    marginLeft: 10,
-    flex: 1,
+  tapToTallyText: {
+    marginLeft: 5,
     fontSize: 14,
+    opacity: 0.7,
   },
 });
