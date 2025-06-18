@@ -22,6 +22,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useGameContext } from '@/context/GameContext';
 import { Player } from '@/context/GameContext';
+import { ChipType } from '@/types/types';
 import { saveGameToHistory } from '@/utils/gameHistory';
 // Import common styles
 import {
@@ -37,51 +38,19 @@ import {
   buttonStyles
 } from '@/styles/commonStyles';
 
-// Transaction card component
-const TransactionCard = ({ transaction }: { transaction: any }) => {
-  const backgroundColor = useThemeColor({}, 'background');
-  const borderColor = useThemeColor({}, 'border');
-  const textColor = useThemeColor({}, 'text');
-
-  // Handle write-off display
-  const hasWriteOff = transaction.writeOff && transaction.writeOff > 0;
-
-  return (
-    <View style={[cardStyles.transactionCard, { backgroundColor, borderColor }]}>
-      <View style={styles.transactionArrow}>
-        <ThemedText style={styles.fromName}>{transaction.from.name}</ThemedText>
-        <View style={styles.arrowContainer}>
-          <Ionicons name="arrow-forward" size={20} color={textColor} />
-        </View>
-        <ThemedText style={styles.toName}>{transaction.to.name}</ThemedText>
-      </View>
-      <ThemedText style={styles.transactionAmount}>
-        {transaction.amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-      </ThemedText>
-
-      {hasWriteOff && (
-        <View style={styles.writeOffContainer}>
-          <Ionicons name="information-circle-outline" size={16} color="#FF9800" />
-          <ThemedText style={styles.writeOffText}>
-            Includes write-off: {transaction.writeOff?.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-          </ThemedText>
-        </View>
-      )}
-    </View>
-  );
-};
-
 // Chip Tally Modal Component
 const ChipTallyModal = ({
   visible,
   player,
   onClose,
-  onSaveTally
+  onSaveTally,
+  chipValues
 }: {
   visible: boolean;
   player: Player | null;
   onClose: () => void;
   onSaveTally: (amount: number, method: 'direct' | 'chips') => void;
+  chipValues: ChipType[] | null;
 }) => {
   const colorScheme = useColorScheme() ?? 'light';
   const borderColor = useThemeColor({}, 'icon');
@@ -90,35 +59,33 @@ const ChipTallyModal = ({
 
   const [directAmount, setDirectAmount] = useState('0');
   const [useChipCounting, setUseChipCounting] = useState(false);
-  const [chipCounts, setChipCounts] = useState<{ color: string; value: number; count: number }[]>([
-    { color: 'white', value: 1, count: 0 },
-    { color: 'red', value: 5, count: 0 },
-    { color: 'blue', value: 10, count: 0 },
-    { color: 'green', value: 25, count: 0 },
-    { color: 'black', value: 100, count: 0 },
-  ]);
+  const [chipCounts, setChipCounts] = useState<{ id: string; color: string; displayName: string; value: number; count: number }[]>([]);
+
+  // Initialize chip counts from game context chip values
+  useEffect(() => {
+    if (chipValues && chipValues.length > 0) {
+      const initialChipCounts = chipValues.map(chip => ({
+        id: chip.id,
+        color: chip.color,
+        displayName: chip.displayName,
+        value: chip.value,
+        count: 0
+      }));
+      setChipCounts(initialChipCounts);
+    }
+  }, [chipValues]);
 
   useEffect(() => {
     if (visible && player) {
       if (player.finalAmount !== undefined) {
         setDirectAmount(player.finalAmount.toString());
-        setChipCounts([
-          { color: 'white', value: 1, count: 0 },
-          { color: 'red', value: 5, count: 0 },
-          { color: 'blue', value: 10, count: 0 },
-          { color: 'green', value: 25, count: 0 },
-          { color: 'black', value: 100, count: 0 },
-        ]);
+        // Reset chip counts when modal opens
+        setChipCounts(prev => prev.map(chip => ({ ...chip, count: 0 })));
       } else {
         setDirectAmount('0');
         setUseChipCounting(false);
-        setChipCounts([
-          { color: 'white', value: 1, count: 0 },
-          { color: 'red', value: 5, count: 0 },
-          { color: 'blue', value: 10, count: 0 },
-          { color: 'green', value: 25, count: 0 },
-          { color: 'black', value: 100, count: 0 },
-        ]);
+        // Reset chip counts when modal opens
+        setChipCounts(prev => prev.map(chip => ({ ...chip, count: 0 })));
       }
     }
   }, [visible, player?.id]);
@@ -159,7 +126,7 @@ const ChipTallyModal = ({
         <ThemedText style={styles.chipCountingTitle}>Count Chips</ThemedText>
 
         {chipCounts.map((chip, index) => (
-          <View key={chip.color} style={styles.chipCountRow}>
+          <View key={chip.id} style={styles.chipCountRow}>
             <View style={[styles.chipIcon, { backgroundColor: chip.color }]} />
             <ThemedText style={styles.chipValue}>${chip.value}</ThemedText>
             <TextInput
@@ -216,16 +183,18 @@ const ChipTallyModal = ({
       onClose={onClose}
       title={`${playerName}'s Final Tally`}
     >
-      <View style={formStyles.toggleContainer}>
-        <ThemedText style={formStyles.toggleLabel}>Enter total amount</ThemedText>
-        <Switch
-          value={useChipCounting}
-          onValueChange={setUseChipCounting}
-          trackColor={{ false: '#767577', true: buttonPrimaryColor }}
-          thumbColor="#f4f3f4"
-        />
-        <ThemedText style={formStyles.toggleLabel}>Count chips</ThemedText>
-      </View>
+      {chipValues && chipValues.length > 0 && (
+        <View style={formStyles.toggleContainer}>
+          <ThemedText style={formStyles.toggleLabel}>Enter total amount</ThemedText>
+          <Switch
+            value={useChipCounting}
+            onValueChange={setUseChipCounting}
+            trackColor={{ false: '#767577', true: buttonPrimaryColor }}
+            thumbColor="#f4f3f4"
+          />
+          <ThemedText style={formStyles.toggleLabel}>Count chips</ThemedText>
+        </View>
+      )}
 
       <ScrollView style={modalStyles.modalBodyScrollable}>
         {useChipCounting ? renderChipCountingForm() : renderDirectAmountForm()}
@@ -418,6 +387,7 @@ export default function TallyUpScreen() {
         player={selectedPlayer}
         onClose={() => setModalVisible(false)}
         onSaveTally={handleSaveTally}
+        chipValues={gameState.chipValues}
       />
     </ThemedView>
   );
