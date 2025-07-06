@@ -25,7 +25,6 @@ export const layoutStyles = StyleSheet.create({
   },
   bottomButtonContainer: {
     marginTop: 0,
-    marginBottom: 10,
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: 'rgba(150, 150, 150, 0.2)'
