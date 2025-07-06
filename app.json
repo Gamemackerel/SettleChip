@@ -1,21 +1,26 @@
 {
   "expo": {
-    "name": "SplitChip",
-    "slug": "SplitChip",
+    "name": "SettleChip",
+    "slug": "SettleChip",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon-package/iOS/icon-60.png",
+    "icon": "./assets/images/icon-package/iOS/AppIcon.appiconset/Icon-60.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.abemiller.settlechip",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/Android/mipmap-hdpi/ic_launcher.png",
+        "foregroundImage": "./assets/images/icon-package/Android/mipmap-hdpi/ic_launcher.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.abemiller.settlechip"
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +42,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4152a4d2-4f80-4bd6-a165-d822f418c052"
+      }
     }
   }
 }
